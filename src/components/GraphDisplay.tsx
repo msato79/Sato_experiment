@@ -1,0 +1,162 @@
+import React, { useEffect, useRef, useState, useImperativeHandle, forwardRef, useCallback } from 'react';
+import { GraphData } from '../csv';
+import { Condition, AxisOffset, GraphViewerAPI } from '../types/experiment';
+import { createGraphViewer } from '../lib/graph-viewer';
+
+interface GraphDisplayProps {
+  graphData: GraphData;
+  condition: Condition;
+  axisOffset: AxisOffset;
+  onNodeClick: (nodeId: number) => void;
+  highlightedNodes?: number[];
+  startNode?: number;
+  targetNode?: number;
+}
+
+export interface GraphDisplayRef {
+  setSelectedNodes: (nodes: number[]) => void;
+}
+
+export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
+  graphData,
+  condition,
+  axisOffset,
+  onNodeClick,
+  highlightedNodes = [],
+  startNode,
+  targetNode,
+}, ref) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const viewerRef = useRef<GraphViewerAPI | null>(null);
+  const [isRotationPaused, setIsRotationPaused] = useState(false);
+
+  // Expose setSelectedNodes method via ref
+  useImperativeHandle(ref, () => ({
+    setSelectedNodes: (nodes: number[]) => {
+      if (viewerRef.current) {
+        viewerRef.current.setSelectedNodes(nodes);
+      }
+    },
+  }));
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    // Create graph viewer
+    const viewer = createGraphViewer(containerRef.current);
+    viewerRef.current = viewer;
+    
+    // Set click callback
+    viewer.onNodeClick(onNodeClick);
+
+    // Set condition first (will initialize camera)
+    viewer.setCondition(condition, axisOffset);
+
+    // Load graph if available
+    if (graphData) {
+      viewer.loadGraph(graphData);
+    }
+
+    // Cleanup
+    return () => {
+      if (viewerRef.current) {
+        viewerRef.current.destroy();
+        viewerRef.current = null;
+      }
+    };
+  }, []); // Only create viewer once
+
+  // Update click callback when it changes
+  useEffect(() => {
+    if (viewerRef.current) {
+      viewerRef.current.onNodeClick(onNodeClick);
+    }
+  }, [onNodeClick]);
+
+  // Update graph data and condition when they change
+  useEffect(() => {
+    if (viewerRef.current && graphData) {
+      viewerRef.current.setCondition(condition, axisOffset);
+      viewerRef.current.loadGraph(graphData);
+    }
+  }, [graphData, condition, axisOffset]);
+
+  // Update start and target nodes when they change (after graph is loaded)
+  useEffect(() => {
+    if (!viewerRef.current || !graphData) return;
+    
+    // Use setTimeout to ensure graph is fully loaded before setting nodes
+    const timeoutId = setTimeout(() => {
+      if (viewerRef.current) {
+        if (startNode !== undefined) {
+          viewerRef.current.setStartNode(startNode);
+        }
+        if (targetNode !== undefined) {
+          viewerRef.current.setTargetNode(targetNode);
+        }
+      }
+    }, 0);
+    
+    return () => clearTimeout(timeoutId);
+  }, [graphData, startNode, targetNode]);
+
+  // Update highlighted nodes
+  const prevHighlightedNodesRef = useRef<number[]>([]);
+  useEffect(() => {
+    if (!viewerRef.current) return;
+
+    // Clear previous highlights
+    prevHighlightedNodesRef.current.forEach(nodeId => {
+      if (!highlightedNodes.includes(nodeId)) {
+        viewerRef.current?.highlightNode(nodeId, false);
+      }
+    });
+
+    // Apply new highlights
+    highlightedNodes.forEach(nodeId => {
+      viewerRef.current?.highlightNode(nodeId, true);
+    });
+
+    // Update previous highlights
+    prevHighlightedNodesRef.current = [...highlightedNodes];
+  }, [highlightedNodes]);
+
+  const handleToggleRotation = useCallback(() => {
+    if (!viewerRef.current) return;
+    
+    if (isRotationPaused) {
+      viewerRef.current.resumeRotation();
+      setIsRotationPaused(false);
+    } else {
+      viewerRef.current.pauseRotation();
+      setIsRotationPaused(true);
+    }
+  }, [isRotationPaused]);
+
+  return (
+    <div className="relative w-full h-full">
+      <div
+        ref={containerRef}
+        className="w-full h-full"
+      />
+      {(condition === 'C' || condition === 'D') && (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleToggleRotation();
+          }}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          className="absolute top-4 right-4 z-50 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-md pointer-events-auto"
+          style={{ pointerEvents: 'auto' }}
+        >
+          {isRotationPaused ? '回転を再開' : '回転を一時停止'}
+        </button>
+      )}
+    </div>
+  );
+});
+

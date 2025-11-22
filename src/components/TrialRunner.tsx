@@ -1,0 +1,141 @@
+import React, { useState, useRef } from 'react';
+import { Trial, TrialResult } from '../types/experiment';
+import { GraphData } from '../csv';
+import { GraphDisplay, GraphDisplayRef } from './GraphDisplay';
+import { TaskDisplay } from './TaskDisplay';
+import { PracticeFeedback } from './PracticeFeedback';
+import { useTaskAHandler } from './TaskHandlers/TaskAHandler';
+import { useTaskBHandler } from './TaskHandlers/TaskBHandler';
+import { ja } from '../locales/ja';
+
+interface TrialRunnerProps {
+  trial: Trial;
+  graphData: GraphData;
+  onTrialComplete: (result: TrialResult) => void;
+  isPractice?: boolean;
+  practiceIndex?: number; // Current practice trial index (0-based)
+  totalPracticeTrials?: number; // Total number of practice trials
+}
+
+export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = false, practiceIndex = 0, totalPracticeTrials = 0 }: TrialRunnerProps) {
+  const isLastPractice = isPractice && practiceIndex !== undefined && totalPracticeTrials !== undefined && practiceIndex === totalPracticeTrials - 1;
+  const [startTime] = useState<number>(Date.now());
+  const graphDisplayRef = useRef<GraphDisplayRef>(null);
+  
+  // Practice mode: store correct answer and user answer for feedback
+  const [correctAnswer, setCorrectAnswer] = useState<string>('');
+  const [userAnswer, setUserAnswer] = useState<string>('');
+  const [isCorrect, setIsCorrect] = useState<boolean>(false);
+  const [clickCount, setClickCount] = useState<number>(0);
+
+  const handlePracticeFeedback = (correct: string, user: string, correctFlag: boolean) => {
+    setCorrectAnswer(correct);
+    setUserAnswer(user);
+    setIsCorrect(correctFlag);
+  };
+
+  const handlePracticeContinue = () => {
+    const result: TrialResult = {
+      subject_id: '',
+      task: trial.task,
+      condition: trial.condition,
+      axis_offset: trial.axis_offset,
+      graph_file: trial.graph_file,
+      trial_id: trial.trial_id,
+      highlighted_nodes: [trial.node1, trial.node2],
+      answer: userAnswer,
+      correct: isCorrect,
+      reaction_time_ms: 0,
+      click_count: clickCount,
+      timestamp: new Date().toISOString(),
+    };
+    onTrialComplete(result);
+  };
+
+  // Use task-specific handlers
+  const taskAHandler = useTaskAHandler({
+    trial,
+    graphData,
+    startTime,
+    isPractice,
+    onComplete: onTrialComplete,
+    onPracticeFeedback: isPractice ? handlePracticeFeedback : undefined,
+  });
+
+  const taskBHandler = useTaskBHandler({
+    trial,
+    graphData,
+    startTime,
+    isPractice,
+    graphDisplayRef,
+    onComplete: onTrialComplete,
+    onPracticeFeedback: isPractice ? handlePracticeFeedback : undefined,
+  });
+
+  const isComplete = trial.task === 'A' ? taskAHandler.isComplete : taskBHandler.isComplete;
+  const selectedNodes = trial.task === 'B' ? taskBHandler.selectedNodes : undefined;
+  const currentClickCount = trial.task === 'A' ? taskAHandler.clickCount : taskBHandler.clickCount;
+  
+  // Track click count for practice mode
+  React.useEffect(() => {
+    if (isComplete && isPractice) {
+      setClickCount(currentClickCount);
+    }
+  }, [isComplete, isPractice, currentClickCount]);
+
+  // For Task A: no node clicks needed
+  const handleNodeClickForTaskA = () => {
+    // Do nothing for Task A
+  };
+
+  return (
+    <div className="relative h-screen bg-gray-50 flex">
+      {/* GraphDisplay - takes remaining space, leaves room for side panel in practice mode */}
+      <div className={`absolute inset-0 ${isPractice ? 'right-80' : ''}`}>
+        <GraphDisplay
+          ref={graphDisplayRef}
+          graphData={graphData}
+          condition={trial.condition}
+          axisOffset={trial.axis_offset}
+          onNodeClick={trial.task === 'A' ? handleNodeClickForTaskA : taskBHandler.handleNodeClick}
+          highlightedNodes={[trial.node1, trial.node2]}
+          startNode={trial.node1}
+          targetNode={trial.node2}
+        />
+      </div>
+      
+      {/* Practice mode: Side panel with instructions */}
+      {isPractice && (
+        <PracticeFeedback
+          trial={trial}
+          isComplete={isComplete}
+          isCorrect={isCorrect}
+          correctAnswer={correctAnswer}
+          userAnswer={userAnswer}
+          isLastPractice={isLastPractice}
+          clickCount={clickCount}
+          onContinue={handlePracticeContinue}
+        />
+      )}
+      
+      {/* TaskDisplayをオーバーレイとして配置（メイントライアルのみ、または練習モードでも表示） */}
+      <div className={`absolute top-4 left-4 z-10 ${isPractice ? 'right-96' : 'right-4'}`}>
+        <TaskDisplay
+          task={trial.task}
+          node1={trial.node1}
+          node2={trial.node2}
+          onAnswerClick={trial.task === 'A' && !isComplete ? taskAHandler.handleAnswerClick : undefined}
+          onProceedClick={trial.task === 'B' && !isComplete ? taskBHandler.handleProceedClick : undefined}
+          selectedNodes={selectedNodes}
+        />
+      </div>
+      
+      {/* Main trial completion message (not shown in practice mode) */}
+      {isComplete && !isPractice && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded z-10">
+          トライアル完了
+        </div>
+      )}
+    </div>
+  );
+}

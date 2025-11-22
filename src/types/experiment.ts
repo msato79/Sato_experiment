@@ -1,0 +1,69 @@
+export type TaskType = 'A' | 'B';
+export type Condition = 'A' | 'B' | 'C' | 'D';
+export type AxisOffset = 0 | 1;
+export type TaskOrder = 'A-B' | 'B-A';
+
+export interface Trial {
+  trial_id: string;
+  task: TaskType;
+  condition: Condition;
+  axis_offset: AxisOffset;
+  graph_file: string;
+  node1: number;
+  node2: number;
+  is_practice?: boolean; // If true, this is a practice trial (not logged to main data)
+}
+
+export interface TrialResult {
+  subject_id: string;
+  task: TaskType;
+  condition: Condition;
+  axis_offset: AxisOffset;
+  graph_file: string;
+  trial_id: string;
+  highlighted_nodes: number[]; // Array of 2 node IDs (node1, node2)
+  answer: string; // For Task A: "2" or "3" (where "3" means "3 or more"); For Task B: comma-separated node IDs
+  correct: boolean;
+  reaction_time_ms: number;
+  click_count: number;
+  timestamp: string;
+  survey_response?: SurveyResponse;
+}
+
+export interface SurveyResponse {
+  clarity: number; // 1-7: グラフの構造が理解しやすかったか
+  fatigue: number; // 1-7: この問題に疲労感を感じたか
+  timestamp: string;
+}
+
+export interface ParticipantData {
+  participant_id: string;
+  trials: TrialResult[];
+  start_time: string;
+  end_time?: string;
+}
+
+export interface ExperimentConfig {
+  PER_TRIAL_SURVEY: boolean;
+  COUNTERBALANCING_METHOD: 'latin-square' | 'random';
+}
+
+export interface GraphViewerConfig {
+  condition: Condition;
+  axis_offset: AxisOffset;
+  onNodeClick?: (nodeId: number) => void;
+}
+
+export interface GraphViewerAPI {
+  loadGraph: (graphData: { nodes: any[]; edges: any[] }) => void;
+  setCondition: (condition: Condition, axisOffset: AxisOffset) => void;
+  highlightNode: (nodeId: number, highlight: boolean) => void;
+  setStartNode: (nodeId: number | null) => void;
+  setTargetNode: (nodeId: number | null) => void;
+  setSelectedNodes: (nodeIds: number[]) => void; // For Task B: highlight selected nodes (yellow/orange)
+  onNodeClick: (callback: (nodeId: number) => void) => void;
+  pauseRotation: () => void;
+  resumeRotation: () => void;
+  destroy: () => void;
+}
+
