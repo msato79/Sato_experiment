@@ -18,7 +18,7 @@ const CONDITION_LABELS: Record<Condition, string> = {
 };
 
 // 説明用のサンプルグラフ
-const INSTRUCTION_GRAPH_FILE = '/graphs/graph_practice_1.csv';
+const INSTRUCTION_GRAPH_FILE = '/graphs/graph_practice.csv';
 
 export function InstructionScreen({ task, onContinue }: InstructionScreenProps) {
   const title = task === 'A' ? ja.taskATitle : ja.taskBTitle;
@@ -92,13 +92,13 @@ export function InstructionScreen({ task, onContinue }: InstructionScreenProps) 
               <div className="text-gray-500">読み込み中...</div>
             </div>
           ) : graphData ? (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6 max-w-5xl mx-auto">
               {CONDITIONS.map((condition) => (
                 <div
                   key={condition}
                   className="relative border-2 border-gray-300 rounded-lg overflow-hidden bg-gray-100"
                 >
-                  <div className="aspect-square w-full">
+                  <div className="w-full" style={{ height: '400px' }}>
                     <GraphDisplay
                       graphData={graphData}
                       condition={condition}

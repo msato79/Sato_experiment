@@ -10,23 +10,6 @@ export function useConditionsLoader(participantId: string) {
   const [trials, setTrials] = useState<Trial[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Load conditions CSV on mount (without participant ID)
-  useEffect(() => {
-    const loadConditionsStructure = async () => {
-      try {
-        const response = await fetch('/conditions.csv');
-        const csvText = await response.text();
-        const allTrials = parseConditionsCSV(csvText);
-        const { taskA, taskB } = separateTrialsByTask(allTrials);
-        // Store trials temporarily - will be reordered when participant starts
-        setTrials([...taskA, ...taskB]);
-      } catch (error) {
-        console.error('Failed to load conditions:', error);
-      }
-    };
-    loadConditionsStructure();
-  }, []);
-
   const loadConditions = async (id?: string) => {
     setIsLoading(true);
     try {
@@ -57,7 +40,8 @@ export function useConditionsLoader(participantId: string) {
           taskA: taskACount,
           taskB: taskBCount,
           taskOrder: 'A->B (fixed)',
-          participantId: participantIdToUse
+          participantId: participantIdToUse,
+          firstFewTrials: orderedTrials.slice(0, 5).map(t => ({ id: t.trial_id, condition: t.condition }))
         });
         
         if (taskACount === 0 || taskBCount === 0) {
@@ -69,7 +53,8 @@ export function useConditionsLoader(participantId: string) {
         
         setTrials(orderedTrials);
       } else {
-        // Default order (both tasks, no randomization)
+        // Default order (both tasks, no randomization) - should not happen in normal flow
+        console.warn('Warning: Loading conditions without participant ID - no randomization applied');
         setTrials([...taskA, ...taskB]);
       }
     } catch (error) {

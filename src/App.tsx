@@ -248,7 +248,7 @@ export function App() {
         />
       );
     }
-    return <SurveyForm task={currentTask || 'A'} graphFile="/graphs/graph_practice_1.csv" node1={0} node2={4} onSubmit={handleSurveySubmit} />;
+    return <SurveyForm task={currentTask || 'A'} graphFile="/graphs/graph_practice.csv" node1={0} node2={4} onSubmit={handleSurveySubmit} />;
   }
 
   if (phase === 'summary') {
