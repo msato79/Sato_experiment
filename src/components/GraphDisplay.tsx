@@ -11,6 +11,7 @@ interface GraphDisplayProps {
   highlightedNodes?: number[];
   startNode?: number;
   targetNode?: number;
+  skipNormalization?: boolean;
 }
 
 export interface GraphDisplayRef {
@@ -25,6 +26,7 @@ export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
   highlightedNodes = [],
   startNode,
   targetNode,
+  skipNormalization = false,
 }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<GraphViewerAPI | null>(null);
@@ -43,7 +45,7 @@ export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
     if (!containerRef.current) return;
 
     // Create graph viewer
-    const viewer = createGraphViewer(containerRef.current);
+    const viewer = createGraphViewer(containerRef.current, { skipNormalization });
     viewerRef.current = viewer;
     
     // Set click callback
@@ -64,7 +66,7 @@ export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
         viewerRef.current = null;
       }
     };
-  }, []); // Only create viewer once
+  }, [skipNormalization]); // Recreate viewer if skipNormalization changes
 
   // Update click callback when it changes
   useEffect(() => {
@@ -94,26 +96,36 @@ export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
         if (targetNode !== undefined) {
           viewerRef.current.setTargetNode(targetNode);
         }
+        // Re-apply highlights after setting start/target nodes
+        // This ensures highlights are correctly applied even when nodes change
+        highlightedNodes.forEach(nodeId => {
+          viewerRef.current?.highlightNode(nodeId, true);
+        });
       }
     }, 0);
     
     return () => clearTimeout(timeoutId);
-  }, [graphData, startNode, targetNode]);
+  }, [graphData, startNode, targetNode, highlightedNodes]);
 
   // Update highlighted nodes
   const prevHighlightedNodesRef = useRef<number[]>([]);
   useEffect(() => {
     if (!viewerRef.current) return;
 
-    // Clear previous highlights
+    // Create sets for comparison
+    const prevSet = new Set(prevHighlightedNodesRef.current);
+    const currentSet = new Set(highlightedNodes);
+
+    // Clear highlights that are no longer in the list
     prevHighlightedNodesRef.current.forEach(nodeId => {
-      if (!highlightedNodes.includes(nodeId)) {
+      if (!currentSet.has(nodeId)) {
         viewerRef.current?.highlightNode(nodeId, false);
       }
     });
 
-    // Apply new highlights
+    // Apply new highlights (including re-highlighting if needed)
     highlightedNodes.forEach(nodeId => {
+      // Always call highlightNode to ensure correct state
       viewerRef.current?.highlightNode(nodeId, true);
     });
 
@@ -150,10 +162,10 @@ export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
             e.preventDefault();
             e.stopPropagation();
           }}
-          className="absolute top-4 right-4 z-50 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-md pointer-events-auto"
+          className="absolute top-4 left-4 z-50 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-md pointer-events-auto"
           style={{ pointerEvents: 'auto' }}
         >
-          {isRotationPaused ? '回転を再開' : '回転を一時停止'}
+          {isRotationPaused ? 'wiggle stereoscopyを再開' : 'wiggle stereoscopyを一時停止'}
         </button>
       )}
     </div>

@@ -25,9 +25,9 @@ export function TaskDisplay({
         {/* Show highlighted nodes */}
         <div className="flex items-center space-x-2">
           <span className="font-semibold text-sm">{ja.highlightedNodes}:</span>
-          <span className="text-base font-bold text-blue-600">{node1}</span>
+          <span className="text-base font-bold text-green-600">{node1}</span>
           <span className="text-gray-500">と</span>
-          <span className="text-base font-bold text-green-600">{node2}</span>
+          <span className="text-base font-bold text-blue-600">{node2}</span>
         </div>
 
         {task === 'A' ? (

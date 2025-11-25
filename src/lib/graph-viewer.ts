@@ -3,15 +3,16 @@ import { GraphData } from '../csv';
 import { Condition, AxisOffset, GraphViewerAPI } from '../types/experiment';
 
 const NODE_SCALE = 10;
-const NODE_GEOMETRY_RADIUS = 0.8; // Increased to make all nodes more visible
-const ROTATION_INTERVAL_MS = 250;
+const NODE_GEOMETRY_RADIUS = 3; // Increased to make all nodes more visible
+const TARGET_GRAPH_SIZE = 30; // Target size for normalized graphs (radius from center)
 
-// Rotation angles for different conditions
-const SMALL_ROTATION_ANGLE = (2 * Math.PI) / 180; // 2 degrees in radians
-const LARGE_ROTATION_ANGLE = (5 * Math.PI) / 180; // 6 degrees in radians
-const AXIS_OFFSET_DISTANCE = 20; // Distance to offset rotation axis in Z direction
+// Wiggle stereoscopy constants
+const WIGGLE_FREQUENCY_MS = 100; // 10Hz (1000ms / 10 = 100ms)
+const SMALL_STEREO_SEPARATION = 3; // Condition C: small stereo separation
+const LARGE_STEREO_SEPARATION = 8; // Condition D: large stereo separation
 
-export function createGraphViewer(container: HTMLElement): GraphViewerAPI {
+export function createGraphViewer(container: HTMLElement, options?: { skipNormalization?: boolean }): GraphViewerAPI {
+  const skipNormalization = options?.skipNormalization ?? false;
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xffffff);
 
@@ -32,11 +33,9 @@ export function createGraphViewer(container: HTMLElement): GraphViewerAPI {
   renderer.domElement.style.zIndex = '1';
   container.appendChild(renderer.domElement);
 
-  // Graph groups
-  const graphRotationGroup = new THREE.Group();
+  // Graph group
   const graphGroup = new THREE.Group();
-  graphRotationGroup.add(graphGroup);
-  scene.add(graphRotationGroup);
+  scene.add(graphGroup);
 
   // Graph data
   const nodeMap = new Map<number, THREE.Vector3>();
@@ -110,24 +109,32 @@ export function createGraphViewer(container: HTMLElement): GraphViewerAPI {
       const minDistance = 18;
       const cameraDistance = Math.max(distance, minDistance);
       
-      camera.position.set(0, 0, cameraDistance);
-      camera.lookAt(0, 0, 0);
+      // Update base camera distance for wiggle stereoscopy
+      baseCameraDistance = cameraDistance;
+      
+      // Update camera position (will be adjusted by wiggle stereoscopy if active)
+      if (currentCondition === 'C' || currentCondition === 'D') {
+        updateWiggleCamera();
+      } else {
+        camera.position.set(0, 0, cameraDistance);
+        camera.lookAt(0, 0, 0);
+      }
       camera.updateProjectionMatrix();
     }
   }
 
-  // Rotation state
+  // Wiggle stereoscopy state
   let currentCondition: Condition = 'B';
-  let currentAxisOffset: AxisOffset = 0;
-  let rotationInterval: number | null = null;
-  let rotationDirection = 1; // 1 for positive, -1 for negative
   let graphCentroid = new THREE.Vector3(0, 0, 0);
   let highlightedNodes = new Set<number>();
   let selectedNodes = new Set<number>(); // For Task B: selected nodes (yellow/orange)
   let startNodeId: number | null = null;
   let targetNodeId: number | null = null;
   let hoveredNodeId: number | null = null;
-  let isRotationPaused = false;
+  let isWigglePaused = false;
+  let wiggleInterval: number | null = null;
+  let isLeftEye = true; // Toggle between left and right eye views
+  let baseCameraDistance = 50; // Base camera distance from origin
 
   // Raycaster for node click detection
   const raycaster = new THREE.Raycaster();
@@ -233,72 +240,68 @@ export function createGraphViewer(container: HTMLElement): GraphViewerAPI {
   }
 
 
-  // Update rotation pivot position
-  function updateRotationPivot() {
-    const rotationCenter = graphCentroid.clone();
+  // Update camera position for wiggle stereoscopy
+  function updateWiggleCamera() {
+    if (!(camera instanceof THREE.PerspectiveCamera)) return;
+    if (currentCondition !== 'C' && currentCondition !== 'D') return;
     
-    // Apply axis offset in Z direction
-    if (currentAxisOffset === 1) {
-      rotationCenter.z += AXIS_OFFSET_DISTANCE;
-    }
-
-    graphRotationGroup.position.copy(rotationCenter);
-    graphGroup.position.copy(rotationCenter.clone().multiplyScalar(-1));
+    const stereoSeparation = currentCondition === 'C' ? SMALL_STEREO_SEPARATION : LARGE_STEREO_SEPARATION;
+    const offsetX = isLeftEye ? -stereoSeparation / 2 : stereoSeparation / 2;
+    
+    // Position camera with stereo separation
+    camera.position.set(offsetX, 0, baseCameraDistance);
+    camera.lookAt(0, 0, 0);
+    camera.updateProjectionMatrix();
   }
 
-  // Rotate graph around Y-axis
-  function rotateGraph(angle: number) {
-    const rotationAxis = new THREE.Vector3(0, 1, 0);
-    const rotationQuaternion = new THREE.Quaternion().setFromAxisAngle(rotationAxis, angle);
-    graphRotationGroup.quaternion.copy(rotationQuaternion);
-  }
-
-  // Start rotation animation
-  function startRotation() {
-    if (rotationInterval) {
-      clearInterval(rotationInterval);
+  // Start wiggle stereoscopy animation
+  function startWiggle() {
+    if (wiggleInterval) {
+      clearInterval(wiggleInterval);
     }
 
-    if ((currentCondition === 'C' || currentCondition === 'D') && !isRotationPaused) {
-      const angle = currentCondition === 'C' ? SMALL_ROTATION_ANGLE : LARGE_ROTATION_ANGLE;
-      
-      rotationInterval = window.setInterval(() => {
-        if (!isRotationPaused) {
-          const currentAngle = rotationDirection * angle;
-          rotateGraph(currentAngle);
-          rotationDirection *= -1; // Alternate direction
+    if ((currentCondition === 'C' || currentCondition === 'D') && !isWigglePaused) {
+      wiggleInterval = window.setInterval(() => {
+        if (!isWigglePaused) {
+          isLeftEye = !isLeftEye; // Toggle between left and right eye
+          updateWiggleCamera();
         }
-      }, ROTATION_INTERVAL_MS);
+      }, WIGGLE_FREQUENCY_MS);
     }
   }
 
-  // Pause rotation
+  // Pause wiggle stereoscopy
   function pauseRotation() {
     console.log('pauseRotation called');
-    isRotationPaused = true;
-    if (rotationInterval) {
-      clearInterval(rotationInterval);
-      rotationInterval = null;
+    isWigglePaused = true;
+    if (wiggleInterval) {
+      clearInterval(wiggleInterval);
+      wiggleInterval = null;
     }
   }
 
-  // Resume rotation
+  // Resume wiggle stereoscopy
   function resumeRotation() {
     console.log('resumeRotation called');
-    isRotationPaused = false;
-    // Restart rotation if condition requires it
+    isWigglePaused = false;
+    // Restart wiggle if condition requires it
     if (currentCondition === 'C' || currentCondition === 'D') {
-      startRotation();
+      startWiggle();
     }
   }
 
-  // Stop rotation
-  function stopRotation() {
-    if (rotationInterval) {
-      clearInterval(rotationInterval);
-      rotationInterval = null;
+  // Stop wiggle stereoscopy
+  function stopWiggle() {
+    if (wiggleInterval) {
+      clearInterval(wiggleInterval);
+      wiggleInterval = null;
     }
-    rotateGraph(0); // Reset to 0 angle
+    // Reset to center view
+    isLeftEye = true;
+    if (camera instanceof THREE.PerspectiveCamera) {
+      camera.position.set(0, 0, baseCameraDistance);
+      camera.lookAt(0, 0, 0);
+    }
   }
 
 
@@ -353,17 +356,69 @@ export function createGraphViewer(container: HTMLElement): GraphViewerAPI {
     reloadGraph();
   }
   
+  // Normalize graph data to fit within target size
+  function normalizeGraphData(data: GraphData): GraphData {
+    if (data.nodes.length === 0) return data;
+
+    // Find bounding box
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    let minZ = Infinity, maxZ = -Infinity;
+
+    data.nodes.forEach(node => {
+      minX = Math.min(minX, node.x);
+      maxX = Math.max(maxX, node.x);
+      minY = Math.min(minY, node.y);
+      maxY = Math.max(maxY, node.y);
+      minZ = Math.min(minZ, node.z);
+      maxZ = Math.max(maxZ, node.z);
+    });
+
+    // Calculate center
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    const centerZ = (minZ + maxZ) / 2;
+
+    // Calculate size (max dimension)
+    const sizeX = maxX - minX;
+    const sizeY = maxY - minY;
+    const sizeZ = maxZ - minZ;
+    const maxSize = Math.max(sizeX, sizeY, sizeZ);
+
+    // If graph is already normalized or has zero size, return original
+    if (maxSize === 0) return data;
+
+    // Calculate scale factor to fit within target size
+    const scale = TARGET_GRAPH_SIZE / maxSize;
+
+    // Normalize nodes: center to origin and scale
+    const normalizedNodes = data.nodes.map(node => ({
+      id: node.id,
+      x: (node.x - centerX) * scale,
+      y: (node.y - centerY) * scale,
+      z: (node.z - centerZ) * scale,
+    }));
+
+    return {
+      nodes: normalizedNodes,
+      edges: data.edges, // Edges don't need normalization
+    };
+  }
+
   // Reload graph with current condition
   function reloadGraph() {
     if (!originalGraphData) return;
     
     clearScene();
 
+    // Normalize graph data first (unless skipped)
+    const normalizedData = skipNormalization ? originalGraphData : normalizeGraphData(originalGraphData);
+
     const centroidAccumulator = new THREE.Vector3(0, 0, 0);
     let nodeCount = 0;
 
     // Process nodes
-    originalGraphData.nodes.forEach(node => {
+    normalizedData.nodes.forEach(node => {
       let pos = new THREE.Vector3(
         node.x * NODE_SCALE,
         node.y * NODE_SCALE,
@@ -389,7 +444,7 @@ export function createGraphViewer(container: HTMLElement): GraphViewerAPI {
     }
 
     // Create nodes
-    originalGraphData.nodes.forEach(node => {
+    normalizedData.nodes.forEach(node => {
       const pos = nodeMap.get(node.id)!;
       const mesh = createNode(pos, node.id);
       
@@ -409,7 +464,7 @@ export function createGraphViewer(container: HTMLElement): GraphViewerAPI {
     });
 
     // Create edges
-    originalGraphData.edges.forEach(edge => {
+    normalizedData.edges.forEach(edge => {
       const from = nodeMap.get(edge.from);
       const to = nodeMap.get(edge.to);
       if (from && to) {
@@ -418,17 +473,15 @@ export function createGraphViewer(container: HTMLElement): GraphViewerAPI {
         edgeLines.push(line);
       }
     });
-
-    updateRotationPivot();
     
     // Adjust camera to fit graph
     adjustCameraToFitGraph();
     
-    // Start or stop rotation based on condition (only if not paused)
-    if (currentCondition === 'B') {
-      stopRotation();
-    } else if ((currentCondition === 'C' || currentCondition === 'D') && !isRotationPaused) {
-      startRotation();
+    // Start or stop wiggle stereoscopy based on condition (only if not paused)
+    if (currentCondition === 'B' || currentCondition === 'A') {
+      stopWiggle();
+    } else if ((currentCondition === 'C' || currentCondition === 'D') && !isWigglePaused) {
+      startWiggle();
     }
   }
 
@@ -436,10 +489,10 @@ export function createGraphViewer(container: HTMLElement): GraphViewerAPI {
   function setCondition(condition: Condition, axisOffset: AxisOffset) {
     const prevCondition = currentCondition;
     currentCondition = condition;
-    currentAxisOffset = axisOffset;
+    // axisOffset is ignored for wiggle stereoscopy implementation
 
-    // Stop current rotation
-    stopRotation();
+    // Stop current wiggle stereoscopy
+    stopWiggle();
 
     // Remove old camera if it exists and condition changed
     if (prevCondition !== condition && camera) {
@@ -474,20 +527,18 @@ export function createGraphViewer(container: HTMLElement): GraphViewerAPI {
         );
         camera.position.set(0, 0, 50);
         camera.lookAt(0, 0, 0);
+        baseCameraDistance = 50;
       }
 
       scene.add(camera);
     }
 
-    // Update rotation pivot (axis offset might have changed)
-    updateRotationPivot();
-
     // Reload graph with new condition if graph is loaded
     if (originalGraphData) {
       reloadGraph();
     } else {
-      if ((condition === 'C' || condition === 'D') && !isRotationPaused) {
-        startRotation();
+      if ((condition === 'C' || condition === 'D') && !isWigglePaused) {
+        startWiggle();
       }
     }
   }
@@ -606,6 +657,11 @@ export function createGraphViewer(container: HTMLElement): GraphViewerAPI {
     
     // Adjust camera to fit graph after resize
     adjustCameraToFitGraph();
+    
+    // Update wiggle camera if active
+    if (currentCondition === 'C' || currentCondition === 'D') {
+      updateWiggleCamera();
+    }
   }
 
   window.addEventListener('resize', handleResize);
@@ -657,7 +713,7 @@ export function createGraphViewer(container: HTMLElement): GraphViewerAPI {
     pauseRotation,
     resumeRotation,
     destroy: () => {
-      stopRotation();
+      stopWiggle();
       clearScene();
       window.removeEventListener('resize', handleResize);
       renderer.domElement.removeEventListener('click', handleMouseClick);
