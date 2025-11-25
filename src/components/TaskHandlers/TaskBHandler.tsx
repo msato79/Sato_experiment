@@ -82,6 +82,7 @@ export function useTaskBHandler({
       axis_offset: trial.axis_offset,
       graph_file: trial.graph_file,
       trial_id: trial.trial_id,
+      node_pair_id: trial.node_pair_id,
       highlighted_nodes: [trial.node1, trial.node2],
       answer: selectedArray.join(','),
       correct,

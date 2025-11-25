@@ -15,6 +15,7 @@ interface DevTrialRunnerProps {
   task: TaskType;
   node1: number;
   node2: number;
+  wiggleFrequencyMs?: number; // Wiggle stereoscopy frequency in milliseconds
   onGraphDataChange: (graphData: GraphData) => void;
 }
 
@@ -25,6 +26,7 @@ export function DevTrialRunner({
   task,
   node1,
   node2,
+  wiggleFrequencyMs,
   onGraphDataChange,
 }: DevTrialRunnerProps) {
   const [startTime] = useState<number>(Date.now());
@@ -98,7 +100,7 @@ export function DevTrialRunner({
     if (task === 'A') {
       // Task A: show actual distance (number of edges)
       return {
-        answer: `最短距離: ${distance}本`,
+        answer: `最短経路のエッジ数: ${distance}本`,
         distance,
         path,
       };
@@ -177,6 +179,7 @@ export function DevTrialRunner({
           highlightedNodes={[node1, node2]}
           startNode={node1}
           targetNode={node2}
+          wiggleFrequencyMs={wiggleFrequencyMs}
         />
       </div>
 
@@ -201,7 +204,7 @@ export function DevTrialRunner({
           </div>
           {task === 'B' && answerInfo.path.length > 0 && (
             <div className="text-sm text-gray-600 mt-1">
-              距離: {answerInfo.distance}本
+              エッジ数: {answerInfo.distance}本
             </div>
           )}
         </div>

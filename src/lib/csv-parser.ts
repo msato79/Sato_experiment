@@ -2,7 +2,8 @@ import { Trial } from '../types/experiment';
 
 /**
  * Parse conditions CSV file
- * Expected format: trial_id, task, graph_file, condition, axis_offset, node1, node2
+ * Expected format: trial_id, task, graph_file, condition, axis_offset, node1, node2 [, node_pair_id]
+ * node_pair_id is optional (for backward compatibility)
  */
 export function parseConditionsCSV(csvText: string): Trial[] {
   const lines = csvText.trim().split('\n');
@@ -30,6 +31,7 @@ export function parseConditionsCSV(csvText: string): Trial[] {
       axis_offset: parseInt(parts[4]) as 0 | 1,
       node1: parseInt(parts[5]),
       node2: parseInt(parts[6]),
+      node_pair_id: parts[7] || undefined, // Optional: node_pair_id
     };
     
     // Validate trial data

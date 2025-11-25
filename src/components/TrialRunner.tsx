@@ -42,6 +42,7 @@ export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = fa
       axis_offset: trial.axis_offset,
       graph_file: trial.graph_file,
       trial_id: trial.trial_id,
+      node_pair_id: trial.node_pair_id,
       highlighted_nodes: [trial.node1, trial.node2],
       answer: userAnswer,
       correct: isCorrect,

@@ -12,6 +12,7 @@ interface GraphDisplayProps {
   startNode?: number;
   targetNode?: number;
   skipNormalization?: boolean;
+  wiggleFrequencyMs?: number; // Wiggle stereoscopy frequency in milliseconds (for dev mode)
 }
 
 export interface GraphDisplayRef {
@@ -27,6 +28,7 @@ export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
   startNode,
   targetNode,
   skipNormalization = false,
+  wiggleFrequencyMs,
 }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<GraphViewerAPI | null>(null);
@@ -133,6 +135,13 @@ export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
     prevHighlightedNodesRef.current = [...highlightedNodes];
   }, [highlightedNodes]);
 
+  // Update wiggle frequency when it changes
+  useEffect(() => {
+    if (viewerRef.current && wiggleFrequencyMs !== undefined) {
+      viewerRef.current.setWiggleFrequency(wiggleFrequencyMs);
+    }
+  }, [wiggleFrequencyMs]);
+
   const handleToggleRotation = useCallback(() => {
     if (!viewerRef.current) return;
     
@@ -162,10 +171,10 @@ export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
             e.preventDefault();
             e.stopPropagation();
           }}
-          className="absolute top-4 left-4 z-50 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-md pointer-events-auto"
+          className="absolute top-4 right-4 z-50 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-md pointer-events-auto"
           style={{ pointerEvents: 'auto' }}
         >
-          {isRotationPaused ? 'wiggle stereoscopyを再開' : 'wiggle stereoscopyを一時停止'}
+          {isRotationPaused ? '回転を再開' : '回転を一時停止'}
         </button>
       )}
     </div>

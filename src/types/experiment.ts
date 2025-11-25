@@ -11,6 +11,7 @@ export interface Trial {
   graph_file: string;
   node1: number;
   node2: number;
+  node_pair_id?: string; // ノードペアの識別子（例: "pair_1", "pair_2", "pair_3"）
   is_practice?: boolean; // If true, this is a practice trial (not logged to main data)
 }
 
@@ -21,24 +22,25 @@ export interface TrialResult {
   axis_offset: AxisOffset;
   graph_file: string;
   trial_id: string;
+  node_pair_id?: string; // ノードペアの識別子（例: "pair_1", "pair_2", "pair_3"）
   highlighted_nodes: number[]; // Array of 2 node IDs (node1, node2)
   answer: string; // For Task A: "2" or "3" (where "3" means "3 or more"); For Task B: comma-separated node IDs
   correct: boolean;
   reaction_time_ms: number;
   click_count: number;
   timestamp: string;
-  survey_response?: SurveyResponse;
 }
 
 export interface SurveyResponse {
-  clarity: number; // 1-7: グラフの構造が理解しやすかったか
-  fatigue: number; // 1-7: この問題に疲労感を感じたか
+  task: TaskType; // どのタスクのアンケートか
+  rankings: Record<Condition, number>; // 各表示方法の順位（1位が一番わかりやすい、4位が一番わかりにくい）
   timestamp: string;
 }
 
 export interface ParticipantData {
   participant_id: string;
   trials: TrialResult[];
+  task_surveys: SurveyResponse[]; // Task-level surveys（タスク終了後のアンケート）
   start_time: string;
   end_time?: string;
 }

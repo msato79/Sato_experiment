@@ -30,3 +30,11 @@ export function shouldShowSurveyAfterBlock(): boolean {
   return !experimentConfig.PER_TRIAL_SURVEY;
 }
 
+/**
+ * Determine if survey should be shown after both tasks are complete
+ */
+export function shouldShowSurveyAfterBothTasks(): boolean {
+  // Always show survey after both tasks are complete (changed from per-trial or per-block)
+  return true;
+}
+

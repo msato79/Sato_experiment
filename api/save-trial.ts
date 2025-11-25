@@ -41,6 +41,7 @@ export default async function handler(
         condition: trialData.condition,
         axis_offset: trialData.axis_offset,
         graph_file: trialData.graph_file,
+        node_pair_id: trialData.node_pair_id || null,
         highlighted_nodes: Array.isArray(trialData.highlighted_nodes) 
           ? trialData.highlighted_nodes.join(',') 
           : trialData.highlighted_nodes,
@@ -49,9 +50,6 @@ export default async function handler(
         reaction_time_ms: trialData.reaction_time_ms,
         click_count: trialData.click_count,
         timestamp: trialData.timestamp,
-        survey_clarity: trialData.survey_response?.clarity || null,
-        survey_fatigue: trialData.survey_response?.fatigue || null,
-        survey_timestamp: trialData.survey_response?.timestamp || null,
       });
 
     if (error) {

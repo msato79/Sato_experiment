@@ -1,52 +1,130 @@
-import React from 'react';
-import { TaskType } from '../types/experiment';
+import React, { useEffect, useState } from 'react';
+import { TaskType, Condition } from '../types/experiment';
 import { ja } from '../locales/ja';
+import { GraphDisplay } from './GraphDisplay';
+import { GraphData, parseCSV } from '../csv';
 
 interface InstructionScreenProps {
   task: TaskType;
   onContinue: () => void;
 }
 
+const CONDITIONS: Condition[] = ['A', 'B', 'C', 'D'];
+const CONDITION_LABELS: Record<Condition, string> = {
+  A: '2D表示（平面表示）',
+  B: '3D表示（固定視点）',
+  C: '3D表示（小さい回転）',
+  D: '3D表示（大きい回転）',
+};
+
+// 説明用のサンプルグラフ
+const INSTRUCTION_GRAPH_FILE = '/graphs/graph_practice_1.csv';
+
 export function InstructionScreen({ task, onContinue }: InstructionScreenProps) {
   const title = task === 'A' ? ja.taskATitle : ja.taskBTitle;
   const instruction = task === 'A' ? ja.instructionTaskA : ja.instructionTaskB;
+  const [graphData, setGraphData] = useState<GraphData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    // Load sample graph for demonstration
+    const loadSampleGraph = async () => {
+      try {
+        const response = await fetch(INSTRUCTION_GRAPH_FILE);
+        const csvText = await response.text();
+        const data = parseCSV(csvText);
+        setGraphData(data);
+      } catch (error) {
+        console.error('Failed to load sample graph:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadSampleGraph();
+  }, []);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-3xl">
+    <div className="min-h-screen bg-gray-50 p-4 overflow-y-auto">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-7xl mx-auto">
         <h1 className="text-2xl font-bold mb-6 text-center">{title}</h1>
-        <div className="prose max-w-none mb-6">
-          <div className="whitespace-pre-line text-gray-700 text-sm leading-relaxed space-y-2">
-            {instruction.split('\n').map((line, index) => {
-              if (line.startsWith('【') && line.endsWith('】')) {
-                return (
-                  <div key={index} className="font-bold text-base text-gray-900 mt-4 mb-2">
-                    {line}
-                  </div>
-                );
-              } else if (line.startsWith('・')) {
-                return (
-                  <div key={index} className="ml-4 text-gray-700">
-                    {line}
-                  </div>
-                );
-              } else if (line.trim() === '') {
-                return <div key={index} className="h-2" />;
-              } else {
-                return (
-                  <div key={index} className="text-gray-700">
-                    {line}
-                  </div>
-                );
-              }
-            })}
+        
+        <div className="flex flex-col lg:flex-row gap-8 items-start mb-8">
+          {/* Left side: Instructions */}
+          <div className="flex-1 min-w-0">
+            <div className="prose max-w-none mb-6">
+              <div className="whitespace-pre-line text-gray-700 text-sm leading-relaxed space-y-2">
+                {instruction.split('\n').map((line, index) => {
+                  if (line.startsWith('【') && line.endsWith('】')) {
+                    return (
+                      <div key={index} className="font-bold text-base text-gray-900 mt-4 mb-2">
+                        {line}
+                      </div>
+                    );
+                  } else if (line.startsWith('・')) {
+                    return (
+                      <div key={index} className="ml-4 text-gray-700">
+                        {line}
+                      </div>
+                    );
+                  } else if (line.trim() === '') {
+                    return <div key={index} className="h-2" />;
+                  } else {
+                    return (
+                      <div key={index} className="text-gray-700">
+                        {line}
+                      </div>
+                    );
+                  }
+                })}
+              </div>
+              <p className="mt-6 text-gray-600 font-medium">{ja.readyToStart}</p>
+            </div>
           </div>
-          <p className="mt-6 text-gray-600 font-medium">{ja.readyToStart}</p>
         </div>
+
+        {/* 4つの表示方法を2x2で表示 */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold mb-4 text-center text-gray-900">
+            表示方法の例
+          </h2>
+          {loading ? (
+            <div className="flex items-center justify-center h-96">
+              <div className="text-gray-500">読み込み中...</div>
+            </div>
+          ) : graphData ? (
+            <div className="grid grid-cols-2 gap-4">
+              {CONDITIONS.map((condition) => (
+                <div
+                  key={condition}
+                  className="relative border-2 border-gray-300 rounded-lg overflow-hidden bg-gray-100"
+                >
+                  <div className="aspect-square w-full">
+                    <GraphDisplay
+                      graphData={graphData}
+                      condition={condition}
+                      axisOffset={0}
+                      onNodeClick={() => {}}
+                      skipNormalization={false}
+                    />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white p-3 text-center font-semibold">
+                    {CONDITION_LABELS[condition]}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-96">
+              <div className="text-gray-500">グラフの読み込みに失敗しました</div>
+            </div>
+          )}
+        </div>
+
+        {/* Continue button */}
         <div className="flex justify-center">
           <button
             onClick={onContinue}
-            className="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="bg-blue-600 text-white py-3 px-8 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-lg font-semibold"
           >
             {ja.next}
           </button>

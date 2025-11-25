@@ -6,25 +6,26 @@ import { InstructionScreen } from './components/InstructionScreen';
 import { TrialRunner } from './components/TrialRunner';
 import { SurveyForm } from './components/SurveyForm';
 import { SummaryScreen } from './components/SummaryScreen';
-import { Trial, TrialResult, SurveyResponse } from './types/experiment';
+import { Trial, TrialResult, SurveyResponse, TaskType } from './types/experiment';
 import { useExperimentPhase } from './hooks/useExperimentPhase';
 import { useConditionsLoader } from './hooks/useConditionsLoader';
 import { useTrialManagement } from './hooks/useTrialManagement';
 import { useDataLogging } from './hooks/useDataLogging';
 import { generatePracticeTrials } from './utils/practiceTrials';
-import { determineTaskOrder } from './lib/counterbalancing';
 import { experimentConfig } from './config/experiment.config';
 import {
   findFirstTrialIndexForTask,
   areAllTrialsComplete,
   hasTaskChanged,
   getNextTask,
+  areBothTasksComplete,
 } from './utils/trialHelpers';
 import {
   getInstructionPhase,
   getPracticePhase,
   shouldShowSurveyAfterTrial,
   shouldShowSurveyAfterBlock,
+  shouldShowSurveyAfterBothTasks,
 } from './utils/phaseHelpers';
 
 export function App() {
@@ -69,9 +70,8 @@ export function App() {
     initializeParticipantData(id);
     await loadConditions(id);
     
-    // Determine first task from task order
-    const taskOrder = determineTaskOrder(experimentConfig.COUNTERBALANCING_METHOD, id);
-    const firstTask = taskOrder === 'A-B' ? 'A' : 'B';
+    // Task order is always fixed: A -> B
+    const firstTask: TaskType = 'A';
     setCurrentTask(firstTask);
     transitionToPhase(getInstructionPhase(firstTask), firstTask);
   }, [initializeParticipantData, loadConditions, setCurrentTask, transitionToPhase]);
@@ -110,7 +110,9 @@ export function App() {
     const nextIndex = currentTrialIndex + 1;
     
     if (areAllTrialsComplete(currentTrialIndex, trials.length)) {
-      if (shouldShowSurveyAfterBlock()) {
+      // All trials for current task are complete
+      // Show survey for current task
+      if (currentTask) {
         transitionToPhase('survey');
       } else {
         await finalizeExperiment();
@@ -123,7 +125,8 @@ export function App() {
     const nextTrial = trials[nextIndex];
     
     if (hasTaskChanged(trials, currentTrialIndex, nextIndex)) {
-      if (shouldShowSurveyAfterBlock()) {
+      // Task changed - show survey for completed task before moving to next task
+      if (currentTask) {
         transitionToPhase('survey');
       } else {
         const nextTask = getNextTask(trials, currentTrialIndex);
@@ -137,7 +140,7 @@ export function App() {
       loadTrial(nextTrial);
       transitionToPhase('trial');
     }
-  }, [participantData, currentTrialIndex, trials, setTrialIndex, setCurrentTask, loadTrial, transitionToPhase, finalizeExperiment]);
+  }, [participantData, currentTrialIndex, trials, currentTask, setTrialIndex, setCurrentTask, loadTrial, transitionToPhase, finalizeExperiment]);
 
   const handleTrialComplete = useCallback(async (result: TrialResult, isPractice: boolean = false) => {
     if (isPractice) {
@@ -147,42 +150,40 @@ export function App() {
 
     await logTrialResult(result);
 
-    if (shouldShowSurveyAfterTrial()) {
-      transitionToPhase('survey');
-    } else {
-      await moveToNextTrial();
-    }
-  }, [logTrialResult, handlePracticeComplete, moveToNextTrial, transitionToPhase]);
+    // Don't show survey after each trial anymore
+    // Survey will be shown after both tasks are complete
+    await moveToNextTrial();
+  }, [logTrialResult, handlePracticeComplete, moveToNextTrial]);
 
   const handleSurveySubmit = useCallback(async (response: SurveyResponse) => {
     if (!participantData) return;
 
     await logSurveyResponse(response);
 
-    const nextIndex = currentTrialIndex + 1;
-    if (areAllTrialsComplete(currentTrialIndex, trials.length)) {
+    // Task order is fixed: A -> B
+    // After task A survey, move to task B instruction
+    // After task B survey, finalize experiment
+    if (response.task === 'A') {
+      // Task A completed - move to task B instruction
+      const firstTrialForTaskB = findFirstTrialIndexForTask(trials, 'B');
+      if (firstTrialForTaskB !== -1) {
+        setCurrentTask('B');
+        transitionToPhase(getInstructionPhase('B'), 'B');
+      } else {
+        // No task B trials - finalize experiment
+        const completedData = await finalizeExperiment();
+        if (completedData) {
+          transitionToPhase('summary');
+        }
+      }
+    } else if (response.task === 'B') {
+      // Task B completed - finalize experiment
       const completedData = await finalizeExperiment();
       if (completedData) {
         transitionToPhase('summary');
       }
-      return;
     }
-
-    const nextTrial = trials[nextIndex];
-    const currentTrial = trials[currentTrialIndex];
-    
-    if (hasTaskChanged(trials, currentTrialIndex, nextIndex)) {
-      const nextTask = getNextTask(trials, currentTrialIndex);
-      if (nextTask) {
-        setCurrentTask(nextTask);
-        transitionToPhase(getInstructionPhase(nextTask), nextTask);
-      }
-    } else {
-      setTrialIndex(nextIndex);
-      loadTrial(nextTrial);
-      transitionToPhase('trial');
-    }
-  }, [participantData, currentTrialIndex, trials, logSurveyResponse, finalizeExperiment, setTrialIndex, setCurrentTask, loadTrial, transitionToPhase]);
+  }, [participantData, trials, logSurveyResponse, finalizeExperiment, setCurrentTask, transitionToPhase]);
 
   // Render phase-specific components
   if (phase === 'experiment-info') {
@@ -234,7 +235,20 @@ export function App() {
   }
 
   if (phase === 'survey') {
-    return <SurveyForm onSubmit={handleSurveySubmit} />;
+    // Get first trial for current task to use its graph and nodes for survey
+    const surveyTrial = currentTask ? trials.find(t => t.task === currentTask) : null;
+    if (surveyTrial) {
+      return (
+        <SurveyForm
+          task={currentTask || 'A'}
+          graphFile={surveyTrial.graph_file}
+          node1={surveyTrial.node1}
+          node2={surveyTrial.node2}
+          onSubmit={handleSurveySubmit}
+        />
+      );
+    }
+    return <SurveyForm task={currentTask || 'A'} graphFile="/graphs/graph_practice_1.csv" node1={0} node2={4} onSubmit={handleSurveySubmit} />;
   }
 
   if (phase === 'summary') {

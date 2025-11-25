@@ -7,7 +7,7 @@ const NODE_GEOMETRY_RADIUS = 3; // Increased to make all nodes more visible
 const TARGET_GRAPH_SIZE = 30; // Target size for normalized graphs (radius from center)
 
 // Wiggle stereoscopy constants
-const WIGGLE_FREQUENCY_MS = 100; // 10Hz (1000ms / 10 = 100ms)
+const DEFAULT_WIGGLE_FREQUENCY_MS = 100; // 10Hz (1000ms / 10 = 100ms)
 const SMALL_STEREO_SEPARATION = 3; // Condition C: small stereo separation
 const LARGE_STEREO_SEPARATION = 8; // Condition D: large stereo separation
 
@@ -135,6 +135,7 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
   let wiggleInterval: number | null = null;
   let isLeftEye = true; // Toggle between left and right eye views
   let baseCameraDistance = 50; // Base camera distance from origin
+  let wiggleFrequencyMs = DEFAULT_WIGGLE_FREQUENCY_MS; // Wiggle frequency in milliseconds
 
   // Raycaster for node click detection
   const raycaster = new THREE.Raycaster();
@@ -266,7 +267,16 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
           isLeftEye = !isLeftEye; // Toggle between left and right eye
           updateWiggleCamera();
         }
-      }, WIGGLE_FREQUENCY_MS);
+      }, wiggleFrequencyMs);
+    }
+  }
+
+  // Set wiggle frequency
+  function setWiggleFrequency(frequencyMs: number) {
+    wiggleFrequencyMs = Math.max(16, Math.min(1000, frequencyMs)); // Clamp between 16ms (60Hz) and 1000ms (1Hz)
+    // Restart wiggle if it's currently running
+    if (wiggleInterval && (currentCondition === 'C' || currentCondition === 'D')) {
+      startWiggle();
     }
   }
 
@@ -712,6 +722,7 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
     onNodeClick: setOnNodeClick,
     pauseRotation,
     resumeRotation,
+    setWiggleFrequency,
     destroy: () => {
       stopWiggle();
       clearScene();

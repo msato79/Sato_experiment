@@ -113,6 +113,14 @@ export function ExperimentInfoScreen({ onContinue }: ExperimentInfoScreenProps) 
                   <span className="font-semibold mr-3 min-w-[2rem]">8.</span>
                   <span>{ja.consentFlowStep8}</span>
                 </li>
+                <li className="flex items-start">
+                  <span className="font-semibold mr-3 min-w-[2rem]">9.</span>
+                  <span>{ja.consentFlowStep9}</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="font-semibold mr-3 min-w-[2rem]">10.</span>
+                  <span>{ja.consentFlowStep10}</span>
+                </li>
               </ol>
             </div>
 

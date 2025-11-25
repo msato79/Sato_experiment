@@ -10,6 +10,7 @@ export function DevApp() {
   const [task, setTask] = useState<TaskType>('A');
   const [node1, setNode1] = useState<number>(1);
   const [node2, setNode2] = useState<number>(2);
+  const [wiggleFrequencyMs, setWiggleFrequencyMs] = useState<number>(100);
 
   const handleGraphDataChange = useCallback((data: GraphData) => {
     setGraphData(data);
@@ -21,7 +22,7 @@ export function DevApp() {
       <div className="bg-white border-b border-gray-200 p-4 shadow-sm">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-xl font-bold mb-4">開発者モード - グラフ選択ツール</h1>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             {/* Task Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -96,6 +97,25 @@ export function DevApp() {
                 min="1"
               />
             </div>
+
+            {/* Wiggle Frequency */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                切り替え間隔 (ms)
+              </label>
+              <input
+                type="number"
+                value={wiggleFrequencyMs}
+                onChange={(e) => setWiggleFrequencyMs(parseInt(e.target.value) || 100)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                min="16"
+                max="1000"
+                step="10"
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                {wiggleFrequencyMs > 0 ? `${(1000 / wiggleFrequencyMs).toFixed(1)}Hz` : '-'}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -109,6 +129,7 @@ export function DevApp() {
           task={task}
           node1={node1}
           node2={node2}
+          wiggleFrequencyMs={wiggleFrequencyMs}
           onGraphDataChange={handleGraphDataChange}
         />
       </div>

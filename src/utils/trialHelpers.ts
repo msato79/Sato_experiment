@@ -37,3 +37,20 @@ export function getNextTask(trials: Trial[], currentIndex: number): TaskType | n
   return trials[nextIndex].task;
 }
 
+/**
+ * Check if both tasks (A and B) are completed
+ */
+export function areBothTasksComplete(trials: Trial[], currentIndex: number): boolean {
+  if (currentIndex + 1 < trials.length) return false; // Not all trials completed yet
+  
+  // Check if both task A and task B exist in trials
+  const hasTaskA = trials.some(t => t.task === 'A');
+  const hasTaskB = trials.some(t => t.task === 'B');
+  
+  if (!hasTaskA || !hasTaskB) return false; // Both tasks must exist
+  
+  // Check if all trials for both tasks are completed
+  // Since currentIndex + 1 >= trials.length, all trials are completed
+  return true;
+}
+

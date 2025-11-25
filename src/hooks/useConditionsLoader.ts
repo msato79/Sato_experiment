@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Trial } from '../types/experiment';
 import { parseConditionsCSV, separateTrialsByTask } from '../lib/csv-parser';
-import { determineTaskOrder, reorderTrials } from '../lib/counterbalancing';
-import { experimentConfig } from '../config/experiment.config';
+import { reorderTrials } from '../lib/counterbalancing';
 
 /**
  * Hook for loading and managing experiment conditions
@@ -46,16 +45,9 @@ export function useConditionsLoader(participantId: string) {
       const participantIdToUse = id || participantId;
       
       if (participantIdToUse) {
-        // Determine task order
-        const taskOrder = determineTaskOrder(
-          experimentConfig.COUNTERBALANCING_METHOD,
-          participantIdToUse
-        );
-        
-        console.log('Task order for participant', participantIdToUse, ':', taskOrder);
-        
-        // Reorder trials based on task order
-        const orderedTrials = reorderTrials(taskA, taskB, taskOrder);
+        // Task order is fixed (A->B), but trial order within each task is randomized
+        // Uses participant ID as seed for reproducible randomization
+        const orderedTrials = reorderTrials(taskA, taskB, participantIdToUse);
         
         // Verify both tasks are included
         const taskACount = orderedTrials.filter(t => t.task === 'A').length;
@@ -64,7 +56,8 @@ export function useConditionsLoader(participantId: string) {
           total: orderedTrials.length,
           taskA: taskACount,
           taskB: taskBCount,
-          order: taskOrder
+          taskOrder: 'A->B (fixed)',
+          participantId: participantIdToUse
         });
         
         if (taskACount === 0 || taskBCount === 0) {
@@ -76,7 +69,7 @@ export function useConditionsLoader(participantId: string) {
         
         setTrials(orderedTrials);
       } else {
-        // Default order (both tasks)
+        // Default order (both tasks, no randomization)
         setTrials([...taskA, ...taskB]);
       }
     } catch (error) {

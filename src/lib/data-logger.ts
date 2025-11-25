@@ -22,7 +22,12 @@ export function loadFromLocalStorage(participantId: string): ParticipantData | n
     const key = `${STORAGE_PREFIX}${participantId}`;
     const data = localStorage.getItem(key);
     if (data) {
-      return JSON.parse(data) as ParticipantData;
+      const parsed = JSON.parse(data) as ParticipantData;
+      // 互換性のため: task_surveysが存在しない場合は空配列を設定
+      if (!parsed.task_surveys) {
+        parsed.task_surveys = [];
+      }
+      return parsed;
     }
   } catch (error) {
     console.error('Failed to load from local storage:', error);
@@ -36,27 +41,27 @@ export function loadFromLocalStorage(participantId: string): ParticipantData | n
 export function exportToCSV(data: ParticipantData): void {
   const rows: string[] = [];
   
-  // CSV header
-  const headers = [
+  // CSV header for trials
+  const trialHeaders = [
     'subject_id',
     'task',
     'trial_id',
     'condition',
     'axis_offset',
     'graph_file',
+    'node_pair_id',
+    'node1',
+    'node2',
     'highlighted_nodes',
     'answer',
     'correct',
     'reaction_time_ms',
     'click_count',
     'timestamp',
-    'survey_clarity',
-    'survey_fatigue',
-    'survey_timestamp',
   ];
-  rows.push(headers.join(','));
+  rows.push(trialHeaders.join(','));
   
-  // CSV rows
+  // CSV rows for trials
   data.trials.forEach(trial => {
     const row = [
       data.participant_id,
@@ -65,15 +70,44 @@ export function exportToCSV(data: ParticipantData): void {
       trial.condition,
       trial.axis_offset.toString(),
       trial.graph_file,
+      trial.node_pair_id || '',
+      trial.highlighted_nodes[0]?.toString() || '',
+      trial.highlighted_nodes[1]?.toString() || '',
       `"${trial.highlighted_nodes.join(',')}"`,
       `"${trial.answer}"`,
       trial.correct ? '1' : '0',
       trial.reaction_time_ms.toString(),
       trial.click_count.toString(),
       trial.timestamp,
-      trial.survey_response?.clarity.toString() || '',
-      trial.survey_response?.fatigue.toString() || '',
-      trial.survey_response?.timestamp || '',
+    ];
+    rows.push(row.join(','));
+  });
+  
+  // Add empty row separator
+  rows.push('');
+  
+  // CSV header for task surveys
+  const surveyHeaders = [
+    'subject_id',
+    'task',
+    'ranking_A',
+    'ranking_B',
+    'ranking_C',
+    'ranking_D',
+    'timestamp',
+  ];
+  rows.push(surveyHeaders.join(','));
+  
+  // CSV rows for task surveys
+  data.task_surveys.forEach(survey => {
+    const row = [
+      data.participant_id,
+      survey.task,
+      survey.rankings.A.toString(),
+      survey.rankings.B.toString(),
+      survey.rankings.C.toString(),
+      survey.rankings.D.toString(),
+      survey.timestamp,
     ];
     rows.push(row.join(','));
   });
@@ -116,6 +150,7 @@ export function createParticipantData(participantId: string): ParticipantData {
   return {
     participant_id: participantId,
     trials: [],
+    task_surveys: [],
     start_time: new Date().toISOString(),
   };
 }
@@ -134,26 +169,15 @@ export function addTrialResult(
 }
 
 /**
- * Add survey response to the last trial
+ * Add survey response to task surveys (タスクレベルのアンケートとして保存)
  */
 export function addSurveyResponse(
   data: ParticipantData,
   response: SurveyResponse
 ): ParticipantData {
-  if (data.trials.length === 0) {
-    return data;
-  }
-  
-  const updatedTrials = [...data.trials];
-  const lastTrial = updatedTrials[updatedTrials.length - 1];
-  updatedTrials[updatedTrials.length - 1] = {
-    ...lastTrial,
-    survey_response: response,
-  };
-  
   return {
     ...data,
-    trials: updatedTrials,
+    task_surveys: [...data.task_surveys, response],
   };
 }
 
@@ -169,62 +193,69 @@ export function completeExperiment(data: ParticipantData): ParticipantData {
 
 /**
  * Save trial result to server
+ * Currently logs to console (will be implemented with API endpoint in the future)
  */
 export async function saveTrialToServer(result: TrialResult): Promise<void> {
   try {
-    const response = await fetch('/api/save-trial', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(result),
-    });
+    // TODO: 将来的にAPIエンドポイントを実装する
+    // const response = await fetch('/api/save-trial', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(result),
+    // });
+    // if (!response.ok) throw new Error('Failed to save trial');
     
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-      throw new Error(errorData.error || 'Failed to save trial');
-    }
-    
-    console.log('[Server Save] Trial result saved:', result.trial_id);
+    // 現在はコンソールにログ出力（開発用）
+    console.log('[Server Save] Trial result:', result);
   } catch (error) {
     console.error('Error saving trial to server:', error);
-    // エラーが発生しても実験は続行できるようにする（localStorageには保存されている）
+    // エラーが発生しても実験は続行できるようにする
   }
 }
 
 /**
  * Save survey response to server
- * 注意: 現在はトライアルと一緒に保存されるため、この関数は使用されない可能性があります
+ * Currently logs to console (will be implemented with API endpoint in the future)
  */
 export async function saveSurveyToServer(
   participantId: string,
   response: SurveyResponse
 ): Promise<void> {
   try {
-    // サーベイはトライアルデータと一緒に保存されるため、ここでは何もしない
-    console.log('[Server Save] Survey response included in trial data');
+    // TODO: 将来的にAPIエンドポイントを実装する
+    // const response = await fetch('/api/save-survey', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify({ participantId, surveyResponse: response }),
+    // });
+    // if (!response.ok) throw new Error('Failed to save survey');
+    
+    // 現在はコンソールにログ出力（開発用）
+    console.log('[Server Save] Survey response:', { participantId, response });
   } catch (error) {
     console.error('Error saving survey to server:', error);
+    // エラーが発生しても実験は続行できるようにする
   }
 }
 
 /**
  * Complete experiment on server
+ * Currently logs to console (will be implemented with API endpoint in the future)
  */
 export async function completeExperimentOnServer(
   data: ParticipantData
 ): Promise<void> {
   try {
-    const response = await fetch('/api/complete-experiment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
+    // TODO: 将来的にAPIエンドポイントを実装する
+    // const response = await fetch('/api/complete-experiment', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(data),
+    // });
+    // if (!response.ok) throw new Error('Failed to complete experiment');
     
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-      throw new Error(errorData.error || 'Failed to complete experiment');
-    }
-    
-    console.log('[Server Save] Experiment completed:', data.participant_id);
+    // 現在はコンソールにログ出力（開発用）
+    console.log('[Server Save] Experiment completed:', data);
   } catch (error) {
     console.error('Error completing experiment on server:', error);
     // エラーが発生しても実験は続行できるようにする
