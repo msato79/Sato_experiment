@@ -82,12 +82,17 @@ export function SurveyForm({ task, graphFile, node1, node2, onSubmit }: SurveyFo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('[SurveyForm] Form submitted, isValid:', isFormValid(), 'rankings:', rankings);
     if (isFormValid()) {
-      onSubmit({
+      const response: SurveyResponse = {
         task,
         rankings: rankings as Record<Condition, number>,
         timestamp: new Date().toISOString(),
-      });
+      };
+      console.log('[SurveyForm] Calling onSubmit with:', response);
+      onSubmit(response);
+    } else {
+      console.warn('[SurveyForm] Form is not valid, cannot submit');
     }
   };
 

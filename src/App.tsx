@@ -165,8 +165,13 @@ export function App() {
   }, [logTrialResult, handlePracticeComplete, moveToNextTrial]);
 
   const handleSurveySubmit = useCallback(async (response: SurveyResponse) => {
-    if (!participantData) return;
+    console.log('[App] handleSurveySubmit called:', response);
+    if (!participantData) {
+      console.error('[App] No participant data available');
+      return;
+    }
 
+    console.log('[App] Calling logSurveyResponse...');
     await logSurveyResponse(response);
 
     // Task order is fixed: A -> B

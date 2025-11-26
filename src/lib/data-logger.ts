@@ -222,6 +222,8 @@ export async function saveSurveyToServer(
   response: SurveyResponse
 ): Promise<void> {
   try {
+    console.log('[Server Save] Attempting to save survey:', { participantId, task: response.task, rankings: response.rankings });
+    
     const apiResponse = await fetch('/api/save-survey', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -230,12 +232,18 @@ export async function saveSurveyToServer(
     
     if (!apiResponse.ok) {
       const errorData = await apiResponse.json().catch(() => ({ error: 'Unknown error' }));
+      console.error('[Server Save] Survey save failed:', {
+        status: apiResponse.status,
+        statusText: apiResponse.statusText,
+        error: errorData
+      });
       throw new Error(`Failed to save survey: ${errorData.error || apiResponse.statusText}`);
     }
     
-    console.log('[Server Save] Survey response saved successfully:', { participantId, task: response.task });
+    const result = await apiResponse.json();
+    console.log('[Server Save] Survey response saved successfully:', { participantId, task: response.task, result });
   } catch (error) {
-    console.error('Error saving survey to server:', error);
+    console.error('[Server Save] Error saving survey to server:', error);
     // エラーが発生しても実験は続行できるようにする
   }
 }
