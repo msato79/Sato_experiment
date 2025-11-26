@@ -16,8 +16,8 @@ const CONDITIONS: Condition[] = ['A', 'B', 'C', 'D'];
 const CONDITION_LABELS: Record<Condition, string> = {
   A: '2D表示（平面表示）',
   B: '3D表示（固定視点）',
-  C: '3D表示（小さい回転）',
-  D: '3D表示（大きい回転）',
+  C: '3D表示（軽い立体視）',
+  D: '3D表示（強い立体視）',
 };
 
 export function SurveyForm({ task, graphFile, node1, node2, onSubmit }: SurveyFormProps) {
@@ -121,6 +121,7 @@ export function SurveyForm({ task, graphFile, node1, node2, onSubmit }: SurveyFo
                       axisOffset={0}
                       onNodeClick={() => {}}
                       skipNormalization={false}
+                      scaleFactor={0.85}
                     />
                   </div>
                   {/* Label and rank selector - positioned below the graph */}

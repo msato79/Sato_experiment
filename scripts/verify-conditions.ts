@@ -101,9 +101,17 @@ function main() {
     const commonNeighbors = findCommonNeighbors(graphData, trial.node1, trial.node2);
     const commonCount = commonNeighbors.length;
     
-    // ノードの次数が4〜6でない場合はエラー
-    if (degree1 < 4 || degree1 > 6 || degree2 < 4 || degree2 > 6) {
-      invalidPairs.push(`タスクB ${trial.trial_id}: ノード${trial.node1}(次数${degree1})とノード${trial.node2}(次数${degree2})の次数が4〜6の範囲外`);
+    const hubNodes = new Set([1, 2, 3, 4, 5]);
+    const isHub1 = hubNodes.has(trial.node1);
+    const isHub2 = hubNodes.has(trial.node2);
+    
+    // ハブノードでない場合、次数が4〜8である必要がある
+    // ハブノードの場合は次数制限を緩和
+    if (!isHub1 && (degree1 < 4 || degree1 > 8)) {
+      invalidPairs.push(`タスクB ${trial.trial_id}: ノード${trial.node1}(次数${degree1})の次数が4〜8の範囲外`);
+    }
+    if (!isHub2 && (degree2 < 4 || degree2 > 8)) {
+      invalidPairs.push(`タスクB ${trial.trial_id}: ノード${trial.node2}(次数${degree2})の次数が4〜8の範囲外`);
     }
     
     // 共通隣接ノードが1〜4個でない場合はエラー

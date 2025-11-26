@@ -1,4 +1,4 @@
-import { Trial } from '../types/experiment';
+import { Trial, Condition } from '../types/experiment';
 
 /**
  * Simple seeded random number generator
@@ -44,6 +44,102 @@ function hashString(str: string): number {
     hash = hash & hash; // Convert to 32-bit integer
   }
   return Math.abs(hash);
+}
+
+/**
+ * ラテン方格法で条件を割り当て
+ * 各セット（3ペア）に条件A, B, C, Dを1つずつ割り当て
+ * 被験者IDに基づいてセットと条件の対応を変える
+ * 
+ * ラテン方格のパターン:
+ * 被験者1: セット1→A, セット2→B, セット3→C, セット4→D
+ * 被験者2: セット1→B, セット2→C, セット3→D, セット4→A
+ * 被験者3: セット1→C, セット2→D, セット3→A, セット4→B
+ * 被験者4: セット1→D, セット2→A, セット3→B, セット4→C
+ * 被験者5以降は被験者1-4のパターンを繰り返す
+ */
+export function assignConditionsByLatinSquare(
+  trials: Trial[],
+  participantId: string
+): Trial[] {
+  const conditions: Condition[] = ['A', 'B', 'C', 'D'];
+  
+  // セットIDごとにグループ化
+  const trialsBySet = new Map<number, Trial[]>();
+  trials.forEach(trial => {
+    if (trial.set_id === undefined) {
+      // set_idがない場合は、node_pair_idから推測
+      const pairIdMatch = trial.node_pair_id?.match(/pair_(\d+)/);
+      if (pairIdMatch) {
+        const pairId = parseInt(pairIdMatch[1]);
+        // タスクA: pair_1-3→セット1, pair_7-9→セット2, pair_13-15→セット3, pair_19-21→セット4
+        // タスクB: pair_4-6→セット1, pair_10-12→セット2, pair_16-18→セット3, pair_22-24→セット4
+        let setId: number;
+        if (trial.task === 'A') {
+          if (pairId <= 3) setId = 1;
+          else if (pairId <= 9) setId = 2;
+          else if (pairId <= 15) setId = 3;
+          else setId = 4;
+        } else {
+          if (pairId <= 6) setId = 1;
+          else if (pairId <= 12) setId = 2;
+          else if (pairId <= 18) setId = 3;
+          else setId = 4;
+        }
+        trial.set_id = setId;
+      } else {
+        console.warn(`Cannot determine set_id for trial ${trial.trial_id}`);
+        return;
+      }
+    }
+    
+    const setId = trial.set_id;
+    if (!trialsBySet.has(setId)) {
+      trialsBySet.set(setId, []);
+    }
+    trialsBySet.get(setId)!.push(trial);
+  });
+  
+  // 被験者IDを数値に変換（文字列の場合はハッシュ）
+  let participantNumber: number;
+  const numericId = parseInt(participantId);
+  if (!isNaN(numericId)) {
+    participantNumber = numericId;
+  } else {
+    participantNumber = hashString(participantId);
+  }
+  
+  // ラテン方格: 被験者番号を4で割った余りでパターンを決定
+  const patternIndex = participantNumber % 4;
+  
+  // ラテン方格のパターン定義（4×4のラテン方格）
+  const latinSquarePatterns: Condition[][] = [
+    ['A', 'B', 'C', 'D'], // パターン0: セット1→A, セット2→B, セット3→C, セット4→D
+    ['B', 'C', 'D', 'A'], // パターン1: セット1→B, セット2→C, セット3→D, セット4→A
+    ['C', 'D', 'A', 'B'], // パターン2: セット1→C, セット2→D, セット3→A, セット4→B
+    ['D', 'A', 'B', 'C'], // パターン3: セット1→D, セット2→A, セット3→B, セット4→C
+  ];
+  
+  const conditionPattern = latinSquarePatterns[patternIndex];
+  
+  // 各セットに条件を割り当て
+  const assignedTrials: Trial[] = [];
+  const setNumbers = Array.from(trialsBySet.keys()).sort((a, b) => a - b);
+  
+  setNumbers.forEach((setNumber) => {
+    const setTrials = trialsBySet.get(setNumber)!;
+    // ラテン方格に基づいて条件を割り当て
+    const assignedCondition = conditionPattern[setNumber - 1];
+    
+    setTrials.forEach(trial => {
+      assignedTrials.push({
+        ...trial,
+        condition: assignedCondition,
+      });
+    });
+  });
+  
+  return assignedTrials;
 }
 
 /**

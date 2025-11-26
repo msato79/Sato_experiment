@@ -4,56 +4,56 @@ import * as path from 'path';
 /**
  * 本番用のconditions.csvを生成
  * 
- * タスクA: 距離2を4個、距離3を8個（距離3の割合を増やす）
- * タスクB: 共通隣接ノード1〜3個のペア（合計12個、ノードの使用を分散）
+ * タスクA: 距離2と距離3を各6個ずつ（半々）、紛らわしいペアを優先
+ * タスクB: 共通隣接ノード1〜3個のペア（合計12個）、ハブノード（1~5）を含むペアも含む
  * 
  * 各条件（A, B, C, D）に適切に配分
  */
 
-// タスクA用のペア（距離2を4個、距離3を8個）
+// タスクA用のペア（距離2と距離3を各6個ずつ、紛らわしいペアを優先）
 const taskAPairs = {
   distance2: [
-    { node1: 7, node2: 8 },
-    { node1: 7, node2: 9 },
-    { node1: 7, node2: 13 },
-    { node1: 7, node2: 22 },
+    { node1: 16, node2: 18 },
+    { node1: 14, node2: 16 },
+    { node1: 7, node2: 36 },
+    { node1: 14, node2: 22 },
+    { node1: 22, node2: 36 },
+    { node1: 30, node2: 38 },
   ],
   distance3: [
-    { node1: 8, node2: 19 },
-    { node1: 9, node2: 19 },
-    { node1: 9, node2: 38 },
-    { node1: 12, node2: 17 },
-    { node1: 12, node2: 19 },
+    { node1: 17, node2: 22 },
+    { node1: 16, node2: 30 },
+    { node1: 17, node2: 30 },
     { node1: 12, node2: 38 },
-    { node1: 13, node2: 38 },
-    { node1: 14, node2: 19 },
+    { node1: 7, node2: 19 },
+    { node1: 7, node2: 16 },
   ],
 };
 
-// タスクB用のペア（共通隣接ノード1〜3個、合計12個、ノードの使用を分散）
+// タスクB用のペア（共通隣接ノード1〜3個、合計12個、ハブノード含む）
 const taskBPairs = {
   common1: [
-    { node1: 7, node2: 13 },
-    { node1: 7, node2: 14 },
-    { node1: 8, node2: 13 },
-    { node1: 8, node2: 16 },
-    { node1: 12, node2: 16 },
+    { node1: 1, node2: 14 },
+    { node1: 1, node2: 16 },
+    { node1: 1, node2: 17 },
+    { node1: 2, node2: 7 },
   ],
   common2: [
-    { node1: 9, node2: 12 },
-    { node1: 9, node2: 22 },
-    { node1: 12, node2: 14 },
-    { node1: 18, node2: 22 },
-    { node1: 7, node2: 8 },
+    { node1: 2, node2: 11 },
+    { node1: 2, node2: 12 },
+    { node1: 3, node2: 14 },
+    { node1: 3, node2: 16 },
   ],
   common3: [
-    { node1: 16, node2: 17 },
-    { node1: 9, node2: 13 },
+    { node1: 3, node2: 8 },
+    { node1: 4, node2: 8 },
+    { node1: 4, node2: 11 },
+    { node1: 4, node2: 18 },
   ],
 };
 
 // 条件ごとの配分
-// タスクA: 各条件に3個ずつ（距離2と距離3を適切に配分、距離3を多く）
+// タスクA: 各条件に3個ずつ（距離2と距離3を適切に配分）
 // タスクB: 各条件に3個ずつ（共通隣接ノード1〜3個を適切に配分）
 const conditions = [
   {
@@ -83,24 +83,25 @@ const conditions = [
   {
     condition: 'C',
     taskA: [
-      ...taskAPairs.distance2.slice(2, 3), // 距離2: 1個
-      ...taskAPairs.distance3.slice(4, 6), // 距離3: 2個
+      ...taskAPairs.distance2.slice(2, 4), // 距離2: 2個
+      ...taskAPairs.distance3.slice(4, 5), // 距離3: 1個
     ],
     taskB: [
       ...taskBPairs.common1.slice(2, 3), // 共通隣接1個: 1個
       ...taskBPairs.common2.slice(2, 3), // 共通隣接2個: 1個
-      ...taskBPairs.common1.slice(4, 5), // 共通隣接1個: 1個（追加）
+      ...taskBPairs.common3.slice(2, 3), // 共通隣接3個: 1個
     ],
   },
   {
     condition: 'D',
     taskA: [
-      ...taskAPairs.distance2.slice(3, 4), // 距離2: 1個
-      ...taskAPairs.distance3.slice(6, 8), // 距離3: 2個
+      ...taskAPairs.distance2.slice(4, 6), // 距離2: 2個
+      ...taskAPairs.distance3.slice(5, 6), // 距離3: 1個
     ],
     taskB: [
       ...taskBPairs.common1.slice(3, 4), // 共通隣接1個: 1個
-      ...taskBPairs.common2.slice(3, 5), // 共通隣接2個: 2個
+      ...taskBPairs.common2.slice(3, 4), // 共通隣接2個: 1個
+      ...taskBPairs.common3.slice(3, 4), // 共通隣接3個: 1個
     ],
   },
 ];

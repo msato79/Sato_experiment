@@ -9,6 +9,8 @@ export type ExperimentPhase =
   | 'instruction-taskB'
   | 'practice-taskA'
   | 'practice-taskB'
+  | 'ready-for-main-taskA'
+  | 'ready-for-main-taskB'
   | 'trial'
   | 'survey'
   | 'summary';

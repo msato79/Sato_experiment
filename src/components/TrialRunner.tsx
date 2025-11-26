@@ -15,9 +15,11 @@ interface TrialRunnerProps {
   isPractice?: boolean;
   practiceIndex?: number; // Current practice trial index (0-based)
   totalPracticeTrials?: number; // Total number of practice trials
+  currentTrialIndex?: number; // Current main trial index (0-based)
+  totalMainTrials?: number; // Total number of main trials for current task
 }
 
-export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = false, practiceIndex = 0, totalPracticeTrials = 0 }: TrialRunnerProps) {
+export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = false, practiceIndex = 0, totalPracticeTrials = 0, currentTrialIndex = 0, totalMainTrials = 0 }: TrialRunnerProps) {
   const isLastPractice = isPractice && practiceIndex !== undefined && totalPracticeTrials !== undefined && practiceIndex === totalPracticeTrials - 1;
   const [startTime] = useState<number>(Date.now());
   const graphDisplayRef = useRef<GraphDisplayRef>(null);
@@ -43,6 +45,9 @@ export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = fa
       graph_file: trial.graph_file,
       trial_id: trial.trial_id,
       node_pair_id: trial.node_pair_id,
+      set_id: trial.set_id,
+      node1: trial.node1,
+      node2: trial.node2,
       highlighted_nodes: [trial.node1, trial.node2],
       answer: userAnswer,
       correct: isCorrect,
@@ -89,10 +94,35 @@ export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = fa
     // Do nothing for Task A
   };
 
+  // Calculate progress
+  const progressText = isPractice 
+    ? `練習 ${practiceIndex + 1}/${totalPracticeTrials}`
+    : `本番 ${currentTrialIndex + 1}/${totalMainTrials}`;
+  const progressPercentage = isPractice
+    ? ((practiceIndex + 1) / totalPracticeTrials) * 100
+    : ((currentTrialIndex + 1) / totalMainTrials) * 100;
+
   return (
-    <div className="relative h-screen bg-gray-50 flex">
+    <div className="relative h-screen bg-gray-50 flex flex-col">
+      {/* Progress bar at the top */}
+      {/* pointer-events-noneでノードクリックを妨げないようにする */}
+      <div className="absolute top-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200 pointer-events-none">
+        <div className="px-4 py-2">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-sm font-semibold text-gray-700">{progressText}</span>
+            <span className="text-xs text-gray-500">{Math.round(progressPercentage)}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progressPercentage}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
       {/* GraphDisplay - takes remaining space, leaves room for side panel in practice mode */}
-      <div className={`absolute inset-0 ${isPractice ? 'right-80' : ''}`}>
+      <div className={`absolute inset-0 ${isPractice ? 'right-80' : ''} pt-16`}>
         <GraphDisplay
           ref={graphDisplayRef}
           graphData={graphData}
@@ -120,7 +150,8 @@ export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = fa
       )}
       
       {/* TaskDisplayをオーバーレイとして配置（メイントライアルのみ、または練習モードでも表示） */}
-      <div className={`absolute top-4 left-4 z-10 ${isPractice ? 'right-96' : 'right-4'}`}>
+      {/* top-20に変更して進捗バーの下に配置、pointer-events-noneでノードクリックを妨げない */}
+      <div className={`absolute top-20 left-4 z-10 ${isPractice ? 'right-96' : 'right-4'} pointer-events-none`}>
         <TaskDisplay
           task={trial.task}
           node1={trial.node1}

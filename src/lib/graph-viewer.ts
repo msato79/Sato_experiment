@@ -11,8 +11,10 @@ const DEFAULT_WIGGLE_FREQUENCY_MS = 100; // 10Hz (1000ms / 10 = 100ms)
 const SMALL_STEREO_SEPARATION = 3; // Condition C: small stereo separation
 const LARGE_STEREO_SEPARATION = 8; // Condition D: large stereo separation
 
-export function createGraphViewer(container: HTMLElement, options?: { skipNormalization?: boolean }): GraphViewerAPI {
+export function createGraphViewer(container: HTMLElement, options?: { skipNormalization?: boolean; scaleFactor?: number }): GraphViewerAPI {
   const skipNormalization = options?.skipNormalization ?? false;
+  const scaleFactor = options?.scaleFactor ?? 1.0;
+  const effectiveTargetGraphSize = TARGET_GRAPH_SIZE * scaleFactor;
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xffffff);
 
@@ -90,8 +92,10 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
     const aspect = container.clientWidth / container.clientHeight;
     
     if (is2D && camera instanceof THREE.OrthographicCamera) {
-      // 2D: Ensure all nodes and edges are visible with minimal padding
-      const padding = 1.05; // Slightly increased padding to prevent clipping
+      // 2D: Ensure all nodes and edges are visible with padding
+      // Increase padding when scaleFactor is smaller to prevent clipping
+      const basePadding = 1.05;
+      const padding = scaleFactor < 1.0 ? basePadding / scaleFactor : basePadding;
       const viewSize = Math.max(maxDistanceFromCenter * padding, 1);
       
       camera.left = -viewSize * aspect;
@@ -100,9 +104,11 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
       camera.bottom = -viewSize;
       camera.updateProjectionMatrix();
     } else if (!is2D && camera instanceof THREE.PerspectiveCamera) {
-      // 3D: Ensure all nodes and edges are visible with minimal padding
+      // 3D: Ensure all nodes and edges are visible with padding
+      // Increase padding when scaleFactor is smaller to prevent clipping
       const fov = camera.fov * (Math.PI / 180);
-      const padding = 1.05; // Slightly increased padding to prevent clipping
+      const basePadding = 1.05;
+      const padding = scaleFactor < 1.0 ? basePadding / scaleFactor : basePadding;
       const distance = (maxDistanceFromCenter * 2 * padding) / (2 * Math.tan(fov / 2));
       
       // Minimum distance to ensure visibility
@@ -399,7 +405,7 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
     if (maxSize === 0) return data;
 
     // Calculate scale factor to fit within target size
-    const scale = TARGET_GRAPH_SIZE / maxSize;
+    const scale = effectiveTargetGraphSize / maxSize;
 
     // Normalize nodes: center to origin and scale
     const normalizedNodes = data.nodes.map(node => ({

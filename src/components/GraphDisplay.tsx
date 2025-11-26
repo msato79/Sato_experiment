@@ -13,6 +13,7 @@ interface GraphDisplayProps {
   targetNode?: number;
   skipNormalization?: boolean;
   wiggleFrequencyMs?: number; // Wiggle stereoscopy frequency in milliseconds (for dev mode)
+  scaleFactor?: number; // Scale factor for graph size (default: 1.0)
 }
 
 export interface GraphDisplayRef {
@@ -29,6 +30,7 @@ export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
   targetNode,
   skipNormalization = false,
   wiggleFrequencyMs,
+  scaleFactor = 1.0,
 }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<GraphViewerAPI | null>(null);
@@ -47,7 +49,7 @@ export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
     if (!containerRef.current) return;
 
     // Create graph viewer
-    const viewer = createGraphViewer(containerRef.current, { skipNormalization });
+    const viewer = createGraphViewer(containerRef.current, { skipNormalization, scaleFactor });
     viewerRef.current = viewer;
     
     // Set click callback
@@ -68,7 +70,7 @@ export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
         viewerRef.current = null;
       }
     };
-  }, [skipNormalization]); // Recreate viewer if skipNormalization changes
+  }, [skipNormalization, scaleFactor]); // Recreate viewer if skipNormalization or scaleFactor changes
 
   // Update click callback when it changes
   useEffect(() => {

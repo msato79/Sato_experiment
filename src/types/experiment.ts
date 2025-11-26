@@ -12,6 +12,7 @@ export interface Trial {
   node1: number;
   node2: number;
   node_pair_id?: string; // ノードペアの識別子（例: "pair_1", "pair_2", "pair_3"）
+  set_id?: number; // セットID（ラテン方格法用、1-4）
   is_practice?: boolean; // If true, this is a practice trial (not logged to main data)
 }
 
@@ -23,6 +24,9 @@ export interface TrialResult {
   graph_file: string;
   trial_id: string;
   node_pair_id?: string; // ノードペアの識別子（例: "pair_1", "pair_2", "pair_3"）
+  set_id?: number; // セットID（ラテン方格法用、1-4）
+  node1?: number; // ノード1のID（分析用）
+  node2?: number; // ノード2のID（分析用）
   highlighted_nodes: number[]; // Array of 2 node IDs (node1, node2)
   answer: string; // For Task A: "2" or "3" (where "3" means "3 or more"); For Task B: comma-separated node IDs
   correct: boolean;

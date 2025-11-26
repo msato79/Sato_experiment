@@ -71,7 +71,7 @@ export function ExperimentInfoScreen({ onContinue }: ExperimentInfoScreenProps) 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-4xl mx-auto h-[calc(100vh-2rem)] flex flex-col">
-        <h1 className="text-2xl font-bold mb-6 text-center">実験について</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">グラフの3Dレイアウトと奥行き知覚補助による可読性の向上の実験について</h1>
         
         <div className="flex-1 bg-white rounded-lg shadow-md p-8 overflow-y-auto">
           <div className="space-y-8">

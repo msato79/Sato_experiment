@@ -192,46 +192,48 @@ export function completeExperiment(data: ParticipantData): ParticipantData {
 }
 
 /**
- * Save trial result to server
- * Currently logs to console (will be implemented with API endpoint in the future)
+ * Save trial result to server (Supabase via Vercel API)
  */
 export async function saveTrialToServer(result: TrialResult): Promise<void> {
   try {
-    // TODO: 将来的にAPIエンドポイントを実装する
-    // const response = await fetch('/api/save-trial', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(result),
-    // });
-    // if (!response.ok) throw new Error('Failed to save trial');
+    const response = await fetch('/api/save-trial', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(result),
+    });
     
-    // 現在はコンソールにログ出力（開発用）
-    console.log('[Server Save] Trial result:', result);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(`Failed to save trial: ${errorData.error || response.statusText}`);
+    }
+    
+    console.log('[Server Save] Trial result saved successfully:', result.trial_id);
   } catch (error) {
     console.error('Error saving trial to server:', error);
-    // エラーが発生しても実験は続行できるようにする
+    // エラーが発生しても実験は続行できるようにする（localStorageに保存されているため）
   }
 }
 
 /**
- * Save survey response to server
- * Currently logs to console (will be implemented with API endpoint in the future)
+ * Save survey response to server (Supabase via Vercel API)
  */
 export async function saveSurveyToServer(
   participantId: string,
   response: SurveyResponse
 ): Promise<void> {
   try {
-    // TODO: 将来的にAPIエンドポイントを実装する
-    // const response = await fetch('/api/save-survey', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ participantId, surveyResponse: response }),
-    // });
-    // if (!response.ok) throw new Error('Failed to save survey');
+    const apiResponse = await fetch('/api/save-survey', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ participantId, surveyResponse: response }),
+    });
     
-    // 現在はコンソールにログ出力（開発用）
-    console.log('[Server Save] Survey response:', { participantId, response });
+    if (!apiResponse.ok) {
+      const errorData = await apiResponse.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(`Failed to save survey: ${errorData.error || apiResponse.statusText}`);
+    }
+    
+    console.log('[Server Save] Survey response saved successfully:', { participantId, task: response.task });
   } catch (error) {
     console.error('Error saving survey to server:', error);
     // エラーが発生しても実験は続行できるようにする
@@ -239,26 +241,27 @@ export async function saveSurveyToServer(
 }
 
 /**
- * Complete experiment on server
- * Currently logs to console (will be implemented with API endpoint in the future)
+ * Complete experiment on server (Supabase via Vercel API)
  */
 export async function completeExperimentOnServer(
   data: ParticipantData
 ): Promise<void> {
   try {
-    // TODO: 将来的にAPIエンドポイントを実装する
-    // const response = await fetch('/api/complete-experiment', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(data),
-    // });
-    // if (!response.ok) throw new Error('Failed to complete experiment');
+    const response = await fetch('/api/complete-experiment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
     
-    // 現在はコンソールにログ出力（開発用）
-    console.log('[Server Save] Experiment completed:', data);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(`Failed to complete experiment: ${errorData.error || response.statusText}`);
+    }
+    
+    console.log('[Server Save] Experiment completed successfully:', data.participant_id);
   } catch (error) {
     console.error('Error completing experiment on server:', error);
-    // エラーが発生しても実験は続行できるようにする
+    // エラーが発生しても実験は続行できるようにする（localStorageに保存されているため）
   }
 }
 

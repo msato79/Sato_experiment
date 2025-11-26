@@ -29,30 +29,23 @@ export default async function handler(
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const trialData = req.body;
+    const { participantId, surveyResponse } = req.body;
+
+    if (!participantId || !surveyResponse) {
+      return res.status(400).json({ error: 'Missing participantId or surveyResponse' });
+    }
 
     // データベースに挿入
     const { data, error } = await supabase
-      .from('experiment_results')
+      .from('experiment_surveys')
       .insert({
-        participant_id: trialData.subject_id,
-        task: trialData.task,
-        trial_id: trialData.trial_id,
-        condition: trialData.condition,
-        axis_offset: trialData.axis_offset,
-        graph_file: trialData.graph_file,
-        node_pair_id: trialData.node_pair_id || null,
-        set_id: trialData.set_id || null,
-        node1: trialData.node1 || trialData.highlighted_nodes?.[0] || null,
-        node2: trialData.node2 || trialData.highlighted_nodes?.[1] || null,
-        highlighted_nodes: Array.isArray(trialData.highlighted_nodes) 
-          ? trialData.highlighted_nodes.join(',') 
-          : trialData.highlighted_nodes,
-        answer: trialData.answer,
-        correct: trialData.correct,
-        reaction_time_ms: trialData.reaction_time_ms,
-        click_count: trialData.click_count,
-        timestamp: trialData.timestamp,
+        participant_id: participantId,
+        task: surveyResponse.task,
+        ranking_A: surveyResponse.rankings.A,
+        ranking_B: surveyResponse.rankings.B,
+        ranking_C: surveyResponse.rankings.C,
+        ranking_D: surveyResponse.rankings.D,
+        timestamp: surveyResponse.timestamp,
       });
 
     if (error) {
@@ -66,8 +59,4 @@ export default async function handler(
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
-
-
-
-
 

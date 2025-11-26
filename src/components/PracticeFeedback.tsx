@@ -42,7 +42,7 @@ export function PracticeFeedback({
   };
 
   return (
-    <div className="absolute right-0 top-0 bottom-0 w-80 bg-white/95 backdrop-blur-sm shadow-lg z-20 overflow-y-auto">
+    <div className="absolute right-0 top-0 bottom-0 w-80 bg-white/95 backdrop-blur-sm shadow-lg z-20 overflow-y-auto pointer-events-auto">
       <div className="p-4 space-y-4">
         <div className="font-bold text-lg text-blue-700 border-b pb-2">
           {ja.practiceTitle}
@@ -74,7 +74,7 @@ export function PracticeFeedback({
               {/* Continue button */}
               <button
                 onClick={handleContinue}
-                className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold"
+                className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold pointer-events-auto"
               >
                 {isLastPractice ? ja.proceedToMain : ja.practiceContinue}
               </button>

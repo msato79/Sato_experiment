@@ -35,13 +35,13 @@ export function TaskDisplay({
           <div className="flex space-x-2 mt-2">
             <button
               onClick={() => onAnswerClick?.('2')}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold"
+              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold pointer-events-auto"
             >
               {ja.distance2}
             </button>
             <button
               onClick={() => onAnswerClick?.('3')}
-              className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-semibold"
+              className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-semibold pointer-events-auto"
             >
               {ja.distance3}
             </button>
@@ -56,7 +56,7 @@ export function TaskDisplay({
             )}
             <button
               onClick={onProceedClick}
-              className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 font-semibold"
+              className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 font-semibold pointer-events-auto"
             >
               {ja.proceedNext}
             </button>

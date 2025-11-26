@@ -6,6 +6,7 @@ import { InstructionScreen } from './components/InstructionScreen';
 import { TrialRunner } from './components/TrialRunner';
 import { SurveyForm } from './components/SurveyForm';
 import { SummaryScreen } from './components/SummaryScreen';
+import { ReadyForMainScreen } from './components/ReadyForMainScreen';
 import { Trial, TrialResult, SurveyResponse, TaskType } from './types/experiment';
 import { useExperimentPhase } from './hooks/useExperimentPhase';
 import { useConditionsLoader } from './hooks/useConditionsLoader';
@@ -93,16 +94,24 @@ export function App() {
       setPracticeIndex(nextPracticeIndex);
       loadTrial(practiceTrials[nextPracticeIndex]);
     } else {
+      // Practice completed - show ready-for-main screen
       if (currentTask) {
-        const firstTrialForTask = findFirstTrialIndexForTask(trials, currentTask);
-        if (firstTrialForTask !== -1) {
-          setTrialIndex(firstTrialForTask);
-          loadTrial(trials[firstTrialForTask]);
-          transitionToPhase('trial');
-        }
+        const readyPhase = currentTask === 'A' ? 'ready-for-main-taskA' : 'ready-for-main-taskB';
+        transitionToPhase(readyPhase, currentTask);
       }
     }
-  }, [currentPracticeIndex, practiceTrials, currentTask, trials, setPracticeIndex, setTrialIndex, loadTrial, transitionToPhase]);
+  }, [currentPracticeIndex, practiceTrials, currentTask, setPracticeIndex, loadTrial, transitionToPhase]);
+
+  const handleReadyForMainContinue = useCallback(() => {
+    if (currentTask) {
+      const firstTrialForTask = findFirstTrialIndexForTask(trials, currentTask);
+      if (firstTrialForTask !== -1) {
+        setTrialIndex(firstTrialForTask);
+        loadTrial(trials[firstTrialForTask]);
+        transitionToPhase('trial');
+      }
+    }
+  }, [currentTask, trials, setTrialIndex, loadTrial, transitionToPhase]);
 
   const moveToNextTrial = useCallback(async () => {
     if (!participantData) return;
@@ -234,6 +243,15 @@ export function App() {
     );
   }
 
+  if (phase === 'ready-for-main-taskA' || phase === 'ready-for-main-taskB') {
+    return (
+      <ReadyForMainScreen
+        task={currentTask || 'A'}
+        onContinue={handleReadyForMainContinue}
+      />
+    );
+  }
+
   if (phase === 'survey') {
     // Get first trial for current task to use its graph and nodes for survey
     const surveyTrial = currentTask ? trials.find(t => t.task === currentTask) : null;
@@ -265,12 +283,18 @@ export function App() {
     }
 
     const currentTrial = trials[currentTrialIndex];
+    // Calculate total trials for current task
+    const trialsForCurrentTask = trials.filter(t => t.task === currentTask);
+    const taskTrialIndex = trialsForCurrentTask.findIndex(t => t.trial_id === currentTrial.trial_id);
+    
     return (
       <TrialRunner
         trial={currentTrial}
         graphData={currentGraphData}
         onTrialComplete={handleTrialComplete}
         isPractice={false}
+        currentTrialIndex={taskTrialIndex}
+        totalMainTrials={trialsForCurrentTask.length}
       />
     );
   }

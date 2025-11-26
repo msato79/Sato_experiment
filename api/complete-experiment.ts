@@ -29,11 +29,29 @@ export default async function handler(
 
     const experimentData = req.body;
 
-    // 実験完了の記録（必要に応じて別テーブルに保存することも可能）
-    // 今回はトライアルデータは既に保存されているので、ログのみ
+    if (!experimentData.participant_id) {
+      return res.status(400).json({ error: 'Missing participant_id' });
+    }
+
+    // 実験完了の記録を保存
+    const { data, error } = await supabase
+      .from('experiment_completions')
+      .upsert({
+        participant_id: experimentData.participant_id,
+        start_time: experimentData.start_time,
+        end_time: experimentData.end_time || new Date().toISOString(),
+      }, {
+        onConflict: 'participant_id'
+      });
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).json({ error: error.message });
+    }
+
     console.log('Experiment completed:', experimentData.participant_id);
 
-    return res.status(200).json({ success: true });
+    return res.status(200).json({ success: true, data });
   } catch (error) {
     console.error('Server error:', error);
     return res.status(500).json({ error: 'Internal server error' });

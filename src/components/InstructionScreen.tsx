@@ -13,8 +13,8 @@ const CONDITIONS: Condition[] = ['A', 'B', 'C', 'D'];
 const CONDITION_LABELS: Record<Condition, string> = {
   A: '2D表示（平面表示）',
   B: '3D表示（固定視点）',
-  C: '3D表示（小さい回転）',
-  D: '3D表示（大きい回転）',
+  C: '3D表示（軽い立体視）',
+  D: '3D表示（強い立体視）',
 };
 
 // 説明用のサンプルグラフ
@@ -27,6 +27,9 @@ export function InstructionScreen({ task, onContinue }: InstructionScreenProps) 
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    // Scroll to top when component mounts
+    window.scrollTo(0, 0);
+    
     // Load sample graph for demonstration
     const loadSampleGraph = async () => {
       try {
@@ -92,23 +95,27 @@ export function InstructionScreen({ task, onContinue }: InstructionScreenProps) 
               <div className="text-gray-500">読み込み中...</div>
             </div>
           ) : graphData ? (
-            <div className="grid grid-cols-2 gap-6 max-w-5xl mx-auto">
+            <div className="grid grid-cols-2 gap-6">
               {CONDITIONS.map((condition) => (
                 <div
                   key={condition}
-                  className="relative border-2 border-gray-300 rounded-lg overflow-hidden bg-gray-100"
+                  className="relative border-2 border-gray-300 rounded-lg bg-gray-100"
                 >
-                  <div className="w-full" style={{ height: '400px' }}>
+                  <div className="aspect-square w-full relative">
                     <GraphDisplay
                       graphData={graphData}
                       condition={condition}
                       axisOffset={0}
                       onNodeClick={() => {}}
                       skipNormalization={false}
+                      scaleFactor={0.85}
                     />
                   </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white p-3 text-center font-semibold">
-                    {CONDITION_LABELS[condition]}
+                  {/* Label below the graph - same style as SurveyForm */}
+                  <div className="bg-black bg-opacity-70 text-white p-4 mt-2 rounded-b-lg">
+                    <div className="text-center font-semibold">
+                      {CONDITION_LABELS[condition]}
+                    </div>
                   </div>
                 </div>
               ))}
