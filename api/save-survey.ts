@@ -36,15 +36,16 @@ export default async function handler(
     }
 
     // データベースに挿入
+    // 注意: PostgreSQLでは引用符なしの識別子は小文字に変換されるため、小文字で指定
     const { data, error } = await supabase
       .from('experiment_surveys')
       .insert({
         participant_id: participantId,
         task: surveyResponse.task,
-        ranking_A: surveyResponse.rankings.A,
-        ranking_B: surveyResponse.rankings.B,
-        ranking_C: surveyResponse.rankings.C,
-        ranking_D: surveyResponse.rankings.D,
+        ranking_a: surveyResponse.rankings.A,  // 小文字に変更
+        ranking_b: surveyResponse.rankings.B,  // 小文字に変更
+        ranking_c: surveyResponse.rankings.C,  // 小文字に変更
+        ranking_d: surveyResponse.rankings.D,  // 小文字に変更
         timestamp: surveyResponse.timestamp,
       });
 
