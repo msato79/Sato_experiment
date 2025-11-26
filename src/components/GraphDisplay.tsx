@@ -139,7 +139,7 @@ export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
 
   // Update wiggle frequency when it changes
   useEffect(() => {
-    if (viewerRef.current && wiggleFrequencyMs !== undefined) {
+    if (viewerRef.current && wiggleFrequencyMs !== undefined && viewerRef.current.setWiggleFrequency) {
       viewerRef.current.setWiggleFrequency(wiggleFrequencyMs);
     }
   }, [wiggleFrequencyMs]);

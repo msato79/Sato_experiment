@@ -62,8 +62,6 @@ export function assignConditionsByLatinSquare(
   trials: Trial[],
   participantId: string
 ): Trial[] {
-  const conditions: Condition[] = ['A', 'B', 'C', 'D'];
-  
   // セットIDごとにグループ化
   const trialsBySet = new Map<number, Trial[]>();
   trials.forEach(trial => {

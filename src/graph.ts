@@ -259,7 +259,7 @@ export function initScene({ nodes, edges }: GraphData) {
       controls.enablePan = true;
       // 手動モードでも自動回転を継続
       if (!autoInterval) {
-        autoInterval = setInterval(autoGraphRotation, intervalMilliseconds);
+        autoInterval = setInterval(autoGraphRotation, intervalMilliseconds) as unknown as number;
       }
       // マウスイベントブロッカーを削除
       removeMouseEventBlockers();
@@ -272,7 +272,7 @@ export function initScene({ nodes, edges }: GraphData) {
       
       // 自動モードの場合は自動切り替えを開始
       if (!autoInterval) {
-        autoInterval = setInterval(autoGraphRotation, intervalMilliseconds);
+        autoInterval = setInterval(autoGraphRotation, intervalMilliseconds) as unknown as number;
       }
       // 自動モードではマウスイベントブロッカーを追加
       addMouseEventBlockers();
@@ -454,7 +454,7 @@ export function initScene({ nodes, edges }: GraphData) {
   setupEventListeners();
 
   // 初期状態で自動モードを開始（グラフ回転）
-  autoInterval = setInterval(autoGraphRotation, intervalMilliseconds);
+  autoInterval = setInterval(autoGraphRotation, intervalMilliseconds) as unknown as number;
   
   // 初期状態では自動モードなのでマウスイベントブロッカーを追加
   addMouseEventBlockers();
@@ -481,10 +481,10 @@ export function initScene({ nodes, edges }: GraphData) {
       angleStep = parseInt(angleStepInput.value, 10);
       // 自動モードがアクティブな場合は新しく設定を適用
       if (currentMode === 'auto') {
-        if (autoInterval) {
-          clearInterval(autoInterval);
-          autoInterval = setInterval(autoGraphRotation, intervalMilliseconds);
-        }
+          if (autoInterval) {
+            clearInterval(autoInterval);
+            autoInterval = setInterval(autoGraphRotation, intervalMilliseconds) as unknown as number;
+          }
       }
     });
     
@@ -492,10 +492,10 @@ export function initScene({ nodes, edges }: GraphData) {
       intervalMilliseconds = parseInt(intervalInput.value, 10);
       // 自動モードがアクティブな場合は新しく設定を適用
       if (currentMode === 'auto') {
-        if (autoInterval) {
-          clearInterval(autoInterval);
-          autoInterval = setInterval(autoGraphRotation, intervalMilliseconds);
-        }
+          if (autoInterval) {
+            clearInterval(autoInterval);
+            autoInterval = setInterval(autoGraphRotation, intervalMilliseconds) as unknown as number;
+          }
       }
     });
     
@@ -503,7 +503,7 @@ export function initScene({ nodes, edges }: GraphData) {
     (document.getElementById('auto-mode') as HTMLButtonElement).addEventListener('click', () => {
       switchMode('auto');
       // 自動モードでのグラフ回転を再開
-      autoInterval = setInterval(autoGraphRotation, intervalMilliseconds);
+      autoInterval = setInterval(autoGraphRotation, intervalMilliseconds) as unknown as number;
     });
 
     (document.getElementById('manual-mode') as HTMLButtonElement).addEventListener('click', () => {

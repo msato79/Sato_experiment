@@ -70,6 +70,7 @@ export interface GraphViewerAPI {
   onNodeClick: (callback: (nodeId: number) => void) => void;
   pauseRotation: () => void;
   resumeRotation: () => void;
+  setWiggleFrequency?: (frequencyMs: number) => void; // Optional: for wiggle animation
   destroy: () => void;
 }
 
