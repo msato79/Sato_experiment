@@ -216,7 +216,7 @@ export async function saveSurveyToServer(
   response: SurveyResponse
 ): Promise<void> {
   try {
-    console.log('[Server Save] Attempting to save survey:', { participantId, task: response.task, rankings: response.rankings });
+    console.log('[Server Save] Attempting to save survey:', { participantId, task: response.task, preferredCondition: response.preferredCondition });
     
     const apiResponse = await fetch('/api/save-survey', {
       method: 'POST',
