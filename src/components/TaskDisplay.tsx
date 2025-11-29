@@ -22,17 +22,9 @@ export function TaskDisplay({
   return (
     <div className="bg-white/90 backdrop-blur-sm p-3 rounded-lg shadow-md mb-4 inline-block">
       <div className="space-y-1.5">
-        {/* Show highlighted nodes */}
-        <div className="flex items-center space-x-2">
-          <span className="font-semibold text-sm">{ja.highlightedNodes}:</span>
-          <span className="text-base font-bold text-green-600">{node1}</span>
-          <span className="text-gray-500">と</span>
-          <span className="text-base font-bold text-blue-600">{node2}</span>
-        </div>
-
         {task === 'A' ? (
           /* Task A: Show two answer buttons */
-          <div className="flex space-x-2 mt-2">
+          <div className="flex space-x-2">
             <button
               onClick={() => onAnswerClick?.('2')}
               className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold pointer-events-auto"
@@ -41,7 +33,7 @@ export function TaskDisplay({
             </button>
             <button
               onClick={() => onAnswerClick?.('3')}
-              className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-semibold pointer-events-auto"
+              className="bg-orange-600 text-white px-6 py-2 rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 font-semibold pointer-events-auto"
             >
               {ja.distance3}
             </button>

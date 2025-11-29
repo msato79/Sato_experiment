@@ -42,10 +42,7 @@ export default async function handler(
       .insert({
         participant_id: participantId,
         task: surveyResponse.task,
-        ranking_a: surveyResponse.rankings.A,  // 小文字に変更
-        ranking_b: surveyResponse.rankings.B,  // 小文字に変更
-        ranking_c: surveyResponse.rankings.C,  // 小文字に変更
-        ranking_d: surveyResponse.rankings.D,  // 小文字に変更
+        preferred_condition: surveyResponse.preferredCondition,
         timestamp: surveyResponse.timestamp,
       });
 

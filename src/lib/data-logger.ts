@@ -90,10 +90,7 @@ export function exportToCSV(data: ParticipantData): void {
   const surveyHeaders = [
     'subject_id',
     'task',
-    'ranking_A',
-    'ranking_B',
-    'ranking_C',
-    'ranking_D',
+    'preferred_condition',
     'timestamp',
   ];
   rows.push(surveyHeaders.join(','));
@@ -103,10 +100,7 @@ export function exportToCSV(data: ParticipantData): void {
     const row = [
       data.participant_id,
       survey.task,
-      survey.rankings.A.toString(),
-      survey.rankings.B.toString(),
-      survey.rankings.C.toString(),
-      survey.rankings.D.toString(),
+      survey.preferredCondition,
       survey.timestamp,
     ];
     rows.push(row.join(','));

@@ -176,7 +176,7 @@ export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
           className="absolute top-4 right-4 z-50 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-md pointer-events-auto"
           style={{ pointerEvents: 'auto' }}
         >
-          {isRotationPaused ? '回転を再開' : '回転を一時停止'}
+          {isRotationPaused ? '立体視を再開' : '立体視を一時停止'}
         </button>
       )}
     </div>

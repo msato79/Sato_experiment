@@ -37,7 +37,7 @@ export interface TrialResult {
 
 export interface SurveyResponse {
   task: TaskType; // どのタスクのアンケートか
-  rankings: Record<Condition, number>; // 各表示方法の順位（1位が一番わかりやすい、4位が一番わかりにくい）
+  preferredCondition: Condition; // 最もわかりやすい表示方法
   timestamp: string;
 }
 

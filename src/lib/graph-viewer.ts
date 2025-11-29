@@ -192,7 +192,7 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
         if (prevMesh.userData.nodeId === startNodeId) {
           (prevMesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
         } else if (prevMesh.userData.nodeId === targetNodeId) {
-          (prevMesh.material as THREE.MeshBasicMaterial).color.setHex(0x0000ff); // Blue
+          (prevMesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
         } else if (highlightedNodes.has(hoveredNodeId)) {
           (prevMesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
         } else if (selectedNodes.has(hoveredNodeId)) {
@@ -226,7 +226,7 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
         if (hoveredNodeId === startNodeId) {
           (prevMesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
         } else if (hoveredNodeId === targetNodeId) {
-          (prevMesh.material as THREE.MeshBasicMaterial).color.setHex(0x0000ff); // Blue
+          (prevMesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
         } else if (highlightedNodes.has(hoveredNodeId)) {
           (prevMesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
         } else if (selectedNodes.has(hoveredNodeId)) {
@@ -471,7 +471,7 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
       if (node.id === startNodeId) {
         (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
       } else if (node.id === targetNodeId) {
-        (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x0000ff); // Blue
+        (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
       } else if (highlightedNodes.has(node.id)) {
         (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
       } else if (selectedNodes.has(node.id)) {
@@ -559,7 +559,7 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
     }
   }
 
-  // Set start and target nodes with different colors
+  // Set start and target nodes with the same color
   function setStartNode(nodeId: number | null) {
     // Clear previous start node color
     if (startNodeId !== null) {
@@ -597,11 +597,11 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
     
     targetNodeId = nodeId;
     
-    // Set new target node color (blue)
+    // Set new target node color (green - same as start node)
     if (nodeId !== null) {
       const mesh = nodeMeshes.get(nodeId);
       if (mesh) {
-        (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x0000ff); // Blue
+        (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
       }
     }
   }
@@ -624,7 +624,7 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
         if (nodeId === startNodeId) {
           (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
         } else if (nodeId === targetNodeId) {
-          (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x0000ff); // Blue
+          (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
         } else if (selectedNodes.has(nodeId)) {
           (mesh.material as THREE.MeshBasicMaterial).color.setHex(0xffaa00); // Orange/Yellow
         } else {

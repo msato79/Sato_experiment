@@ -159,16 +159,16 @@ export function ExperimentInfoScreen({ onContinue }: ExperimentInfoScreenProps) 
           </div>
         </div>
 
-        {/* Fullscreen requirement message */}
+        {/* Fullscreen recommendation message */}
         {!isFullscreenMode && (
-          <div className="mt-4 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
-            <p className="text-center text-yellow-800 font-semibold mb-3">
-              実験を開始するには、ブラウザをフルスクリーンにする必要があります
+          <div className="mt-4 p-4 bg-blue-50 border-2 border-blue-300 rounded-lg">
+            <p className="text-center text-blue-800 font-semibold mb-3">
+              全画面表示を推奨します。フルスクリーンにしますか？
             </p>
             <div className="flex justify-center">
               <button
                 onClick={handleRequestFullscreen}
-                className="bg-yellow-600 text-white px-6 py-2 rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 font-semibold"
+                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold"
               >
                 フルスクリーンにする
               </button>
@@ -180,12 +180,7 @@ export function ExperimentInfoScreen({ onContinue }: ExperimentInfoScreenProps) 
         <div className="mt-6 flex justify-center">
           <button
             onClick={onContinue}
-            disabled={!isFullscreenMode}
-            className={`px-8 py-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold text-lg ${
-              isFullscreenMode
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-            }`}
+            className="px-8 py-3 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold text-lg"
           >
             {ja.next}
           </button>
