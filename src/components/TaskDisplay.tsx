@@ -20,35 +20,35 @@ export function TaskDisplay({
   selectedNodes = []
 }: TaskDisplayProps) {
   return (
-    <div className="bg-white/90 backdrop-blur-sm p-3 rounded-lg shadow-md mb-4 inline-block">
-      <div className="space-y-1.5">
+    <div className="bg-white/90 backdrop-blur-sm p-2 rounded-lg shadow-md inline-block">
+      <div className="space-y-1">
         {task === 'A' ? (
           /* Task A: Show two answer buttons */
-          <div className="flex space-x-2">
+          <div className="flex space-x-1.5">
             <button
               onClick={() => onAnswerClick?.('2')}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold pointer-events-auto"
+              className="bg-blue-600 text-white px-4 py-1.5 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm font-semibold pointer-events-auto"
             >
               {ja.distance2}
             </button>
             <button
               onClick={() => onAnswerClick?.('3')}
-              className="bg-orange-600 text-white px-6 py-2 rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 font-semibold pointer-events-auto"
+              className="bg-orange-600 text-white px-4 py-1.5 rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 text-sm font-semibold pointer-events-auto"
             >
               {ja.distance3}
             </button>
           </div>
         ) : (
           /* Task B: Show selected nodes count and proceed button */
-          <div className="mt-2 space-y-2">
+          <div className="space-y-1">
             {selectedNodes.length > 0 && (
-              <div className="text-sm text-gray-700">
+              <div className="text-xs text-gray-700">
                 選択されたノード: {selectedNodes.sort((a, b) => a - b).join(', ')}
               </div>
             )}
             <button
               onClick={onProceedClick}
-              className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 font-semibold pointer-events-auto"
+              className="bg-purple-600 text-white px-4 py-1.5 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 text-sm font-semibold pointer-events-auto"
             >
               {ja.proceedNext}
             </button>

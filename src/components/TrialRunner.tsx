@@ -104,25 +104,42 @@ export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = fa
 
   return (
     <div className="relative h-screen bg-gray-50 flex flex-col">
-      {/* Progress bar at the top */}
+      {/* Progress bar and TaskDisplay side by side at the top */}
       {/* pointer-events-noneでノードクリックを妨げないようにする */}
       <div className="absolute top-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200 pointer-events-none">
-        <div className="px-4 py-2">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-sm font-semibold text-gray-700">{progressText}</span>
-            <span className="text-xs text-gray-500">{Math.round(progressPercentage)}%</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progressPercentage}%` }}
-            />
+        <div className="px-3 py-1.5">
+          <div className="flex items-center gap-3">
+            {/* TaskDisplay（ボタン）を左側に配置 */}
+            <div className="pointer-events-none flex-shrink-0">
+              <TaskDisplay
+                task={trial.task}
+                node1={trial.node1}
+                node2={trial.node2}
+                onAnswerClick={trial.task === 'A' && !isComplete ? taskAHandler.handleAnswerClick : undefined}
+                onProceedClick={trial.task === 'B' && !isComplete ? taskBHandler.handleProceedClick : undefined}
+                selectedNodes={selectedNodes}
+              />
+            </div>
+            {/* 進捗バーを右側に配置 */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-0.5">
+                <span className="text-xs font-semibold text-gray-700">{progressText}</span>
+                <span className="text-xs text-gray-500">{Math.round(progressPercentage)}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-1.5">
+                <div 
+                  className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                  style={{ width: `${progressPercentage}%` }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* GraphDisplay - takes remaining space, leaves room for side panel in practice mode */}
-      <div className={`absolute inset-0 ${isPractice ? 'right-80' : ''} pt-16`}>
+      {/* 進捗バーの高さに合わせてptを最小限に（約56px = py-1.5 + コンテンツ高さ） */}
+      <div className={`absolute inset-0 ${isPractice ? 'right-80' : ''} pt-14`}>
         <GraphDisplay
           ref={graphDisplayRef}
           graphData={graphData}
@@ -132,6 +149,7 @@ export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = fa
           highlightedNodes={[trial.node1, trial.node2]}
           startNode={trial.node1}
           targetNode={trial.node2}
+          scaleFactor={isPractice ? 0.85 : 1.0}
         />
       </div>
       
@@ -148,19 +166,6 @@ export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = fa
           onContinue={handlePracticeContinue}
         />
       )}
-      
-      {/* TaskDisplayをオーバーレイとして配置（メイントライアルのみ、または練習モードでも表示） */}
-      {/* top-20に変更して進捗バーの下に配置、pointer-events-noneでノードクリックを妨げない */}
-      <div className={`absolute top-20 left-4 z-10 ${isPractice ? 'right-96' : 'right-4'} pointer-events-none`}>
-        <TaskDisplay
-          task={trial.task}
-          node1={trial.node1}
-          node2={trial.node2}
-          onAnswerClick={trial.task === 'A' && !isComplete ? taskAHandler.handleAnswerClick : undefined}
-          onProceedClick={trial.task === 'B' && !isComplete ? taskBHandler.handleProceedClick : undefined}
-          selectedNodes={selectedNodes}
-        />
-      </div>
       
       {/* Main trial completion message (not shown in practice mode) */}
       {isComplete && !isPractice && (
