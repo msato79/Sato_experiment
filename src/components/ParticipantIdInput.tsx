@@ -8,6 +8,21 @@ interface ParticipantIdInputProps {
 export function ParticipantIdInput({ onStart }: ParticipantIdInputProps) {
   const [participantId, setParticipantId] = useState('');
 
+  // 全角数字を半角数字に変換し、数値以外の文字を除去する
+  const normalizeInput = (value: string): string => {
+    // 全角数字を半角数字に変換
+    const halfWidth = value.replace(/[０-９]/g, (char) => {
+      return String.fromCharCode(char.charCodeAt(0) - 0xFEE0);
+    });
+    // 数値以外の文字を除去
+    return halfWidth.replace(/[^0-9]/g, '');
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const normalized = normalizeInput(e.target.value);
+    setParticipantId(normalized);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (participantId.trim()) {
@@ -28,7 +43,9 @@ export function ParticipantIdInput({ onStart }: ParticipantIdInputProps) {
               type="text"
               id="participantId"
               value={participantId}
-              onChange={(e) => setParticipantId(e.target.value)}
+              onChange={handleChange}
+              inputMode="numeric"
+              pattern="[0-9]*"
               placeholder={ja.participantIdPlaceholder}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
