@@ -69,6 +69,12 @@ export function PracticeFeedback({
                 <div className={`font-bold text-base ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
                   {isCorrect ? ja.correct : ja.incorrect}
                 </div>
+                {trial.task === 'B' && (
+                  <div className="mt-2 text-sm text-gray-700">
+                    <div>{ja.correctAnswer}: {correctAnswer}</div>
+                    <div>{ja.yourAnswer}: {userAnswer}</div>
+                  </div>
+                )}
               </div>
               
               {/* Continue button */}

@@ -39,13 +39,8 @@ export function TaskDisplay({
             </button>
           </div>
         ) : (
-          /* Task B: Show selected nodes count and proceed button */
-          <div className="space-y-1">
-            {selectedNodes.length > 0 && (
-              <div className="text-xs text-gray-700">
-                選択されたノード: {selectedNodes.sort((a, b) => a - b).join(', ')}
-              </div>
-            )}
+          /* Task B: Show proceed button only */
+          <div>
             <button
               onClick={onProceedClick}
               className="bg-purple-600 text-white px-4 py-1.5 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 text-sm font-semibold pointer-events-auto"

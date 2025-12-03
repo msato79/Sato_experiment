@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ja } from '../locales/ja';
 
 interface ConsentFormProps {
@@ -7,15 +7,6 @@ interface ConsentFormProps {
 }
 
 export function ConsentForm({ onAgree, onDisagree }: ConsentFormProps) {
-  const [showDisagreeMessage, setShowDisagreeMessage] = useState(false);
-
-  const handleDisagree = () => {
-    setShowDisagreeMessage(true);
-    setTimeout(() => {
-      onDisagree();
-    }, 2000);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-4xl mx-auto h-[calc(100vh-2rem)] flex flex-col">
@@ -56,27 +47,20 @@ export function ConsentForm({ onAgree, onDisagree }: ConsentFormProps) {
               </div>
             </div>
 
-            {/* Buttons */}
-            {showDisagreeMessage ? (
-              <div className="text-center p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-                <p className="text-yellow-800">{ja.consentDisagreeMessage}</p>
-              </div>
-            ) : (
-              <div className="flex space-x-4 justify-center">
-                <button
-                  onClick={onAgree}
-                  className="bg-green-600 text-white px-8 py-3 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-semibold text-lg"
-                >
-                  {ja.consentAgree}
-                </button>
-                <button
-                  onClick={handleDisagree}
-                  className="bg-red-600 text-white px-8 py-3 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 font-semibold text-lg"
-                >
-                  {ja.consentDisagree}
-                </button>
-              </div>
-            )}
+            {/* Disagree message */}
+            <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+              <p className="text-sm text-yellow-800">{ja.consentDisagreeMessage}</p>
+            </div>
+
+            {/* Agree button */}
+            <div className="flex justify-center">
+              <button
+                onClick={onAgree}
+                className="bg-green-600 text-white px-8 py-3 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-semibold text-lg"
+              >
+                {ja.consentAgree}
+              </button>
+            </div>
         </div>
       </div>
     </div>

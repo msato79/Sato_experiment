@@ -44,7 +44,7 @@ export function useTaskBHandler({
     setSelectedNodes(newSelectedNodes);
     setClickCount(prev => prev + 1);
     
-    // Update graph display
+    // Update graph display to highlight selected nodes
     if (graphDisplayRef.current) {
       graphDisplayRef.current.setSelectedNodes(Array.from(newSelectedNodes));
     }
@@ -69,8 +69,9 @@ export function useTaskBHandler({
     
     // Store answers for practice feedback
     if (isPractice && onPracticeFeedback) {
-      const correctAnswer = correctArray.length > 0 ? `ノード ${correctArray.join(', ')}` : 'なし';
-      const userAnswer = selectedArray.length > 0 ? `ノード ${selectedArray.join(', ')}` : 'なし';
+      // For Task B practice, show only the count
+      const correctAnswer = `${correctArray.length}個`;
+      const userAnswer = `${selectedArray.length}個`;
       onPracticeFeedback(correctAnswer, userAnswer, correct);
       return;
     }

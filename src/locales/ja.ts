@@ -85,7 +85,7 @@ export const ja = {
   consentSection4Content: '・ 実施分担者 佐藤充（所属：筑波大学 Email: sato@vislab.cs.tsukuba.ac.jp）\n・ 実施責任者 三末和男（所属：筑波大学システム情報系 Email: misue@cs.tsukuba.ac.jp）\n・ 事務担当者 筑波大学 システム情報系 研究倫理委員会 事務局（システム情報エリア支援室 TEL:029-853-4989）',
   consentAgree: '同意する',
   consentDisagree: '同意しない',
-  consentDisagreeMessage: '同意いただけない場合、実験を続行することができません。',
+  consentDisagreeMessage: '同意いただけない場合は、ブラウザの戻るボタンで前のページに戻ってください。',
   
   // Consent form left panel
   consentExperimentFlow: '実験の流れ',
