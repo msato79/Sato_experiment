@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Trial, TrialResult } from '../types/experiment';
+import React, { useState, useRef, useEffect } from 'react';
+import { Trial, TrialResult, Condition } from '../types/experiment';
 import { GraphData } from '../csv';
 import { GraphDisplay, GraphDisplayRef } from './GraphDisplay';
 import { TaskDisplay } from './TaskDisplay';
@@ -7,6 +7,13 @@ import { PracticeFeedback } from './PracticeFeedback';
 import { useTaskAHandler } from './TaskHandlers/TaskAHandler';
 import { useTaskBHandler } from './TaskHandlers/TaskBHandler';
 import { ja } from '../locales/ja';
+
+const CONDITION_LABELS: Record<Condition, string> = {
+  A: '2D表示（平面表示）',
+  B: '3D表示（固定視点・立体視なし）',
+  C: '3D表示（固定視点・立体視あり）',
+  D: '3D表示（自由視点・立体視なし）',
+};
 
 interface TrialRunnerProps {
   trial: Trial;
@@ -21,7 +28,9 @@ interface TrialRunnerProps {
 
 export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = false, practiceIndex = 0, totalPracticeTrials = 0, currentTrialIndex = 0, totalMainTrials = 0 }: TrialRunnerProps) {
   const isLastPractice = isPractice && practiceIndex !== undefined && totalPracticeTrials !== undefined && practiceIndex === totalPracticeTrials - 1;
-  const [startTime] = useState<number>(Date.now());
+  const [countdown, setCountdown] = useState<number>(3);
+  const [showGraph, setShowGraph] = useState<boolean>(false);
+  const startTimeRef = useRef<number>(Date.now());
   const graphDisplayRef = useRef<GraphDisplayRef>(null);
   
   // Practice mode: store correct answer and user answer for feedback
@@ -62,7 +71,7 @@ export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = fa
   const taskAHandler = useTaskAHandler({
     trial,
     graphData,
-    startTime,
+    startTime: startTimeRef.current,
     isPractice,
     onComplete: onTrialComplete,
     onPracticeFeedback: isPractice ? handlePracticeFeedback : undefined,
@@ -71,7 +80,7 @@ export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = fa
   const taskBHandler = useTaskBHandler({
     trial,
     graphData,
-    startTime,
+    startTime: startTimeRef.current,
     isPractice,
     graphDisplayRef,
     onComplete: onTrialComplete,
@@ -88,6 +97,26 @@ export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = fa
       setClickCount(currentClickCount);
     }
   }, [isComplete, isPractice, currentClickCount]);
+
+  // Countdown effect
+  useEffect(() => {
+    setCountdown(3);
+    setShowGraph(false);
+    
+    const countdownInterval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(countdownInterval);
+          startTimeRef.current = Date.now();
+          setShowGraph(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(countdownInterval);
+  }, [trial.trial_id]); // Reset countdown when trial changes
 
   // For Task A: no node clicks needed
   const handleNodeClickForTaskA = () => {
@@ -137,21 +166,55 @@ export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = fa
         </div>
       </div>
 
+      {/* Countdown overlay */}
+      {!showGraph && (
+        <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-gray-900 bg-opacity-80">
+          <div className="text-white text-9xl font-bold mb-8">
+            {countdown > 0 ? countdown : ''}
+          </div>
+          <div className="text-white text-2xl font-semibold mb-4">
+            {CONDITION_LABELS[trial.condition]}
+          </div>
+          {trial.condition === 'A' && (
+            <div className="text-white text-lg text-center px-8">
+              2D平面表示です。視点は操作できません
+            </div>
+          )}
+          {trial.condition === 'B' && (
+            <div className="text-white text-lg text-center px-8">
+              固定視点です。視点は操作できません
+            </div>
+          )}
+          {trial.condition === 'C' && (
+            <div className="text-white text-lg text-center px-8">
+              立体視が自動で動きます。一時停止ボタンで制御できます
+            </div>
+          )}
+          {trial.condition === 'D' && (
+            <div className="text-white text-lg text-center px-8">
+              自由視点です。マウスで視点を操作できます
+            </div>
+          )}
+        </div>
+      )}
+
       {/* GraphDisplay - takes remaining space, leaves room for side panel in practice mode */}
       {/* 進捗バーの高さに合わせてptを最小限に（約56px = py-1.5 + コンテンツ高さ） */}
-      <div className={`absolute inset-0 ${isPractice ? 'right-80' : ''} pt-14`}>
-        <GraphDisplay
-          ref={graphDisplayRef}
-          graphData={graphData}
-          condition={trial.condition}
-          axisOffset={trial.axis_offset}
-          onNodeClick={trial.task === 'A' ? handleNodeClickForTaskA : taskBHandler.handleNodeClick}
-          highlightedNodes={[trial.node1, trial.node2]}
-          startNode={trial.node1}
-          targetNode={trial.node2}
-          scaleFactor={isPractice ? 0.85 : 1.0}
-        />
-      </div>
+      {showGraph && (
+        <div className={`absolute inset-0 ${isPractice ? 'right-80' : ''} pt-14`}>
+          <GraphDisplay
+            ref={graphDisplayRef}
+            graphData={graphData}
+            condition={trial.condition}
+            axisOffset={trial.axis_offset}
+            onNodeClick={trial.task === 'A' ? handleNodeClickForTaskA : taskBHandler.handleNodeClick}
+            highlightedNodes={[trial.node1, trial.node2]}
+            startNode={trial.node1}
+            targetNode={trial.node2}
+            scaleFactor={isPractice ? 0.85 : 1.0}
+          />
+        </div>
+      )}
       
       {/* Practice mode: Side panel with instructions */}
       {isPractice && (

@@ -13,7 +13,7 @@ export function generatePracticeTrials(task: TaskType): Trial[] {
       {
         trial_id: 'practice_A_1',
         task: 'A',
-        condition: 'A',
+        condition: 'B',
         axis_offset: 0,
         graph_file: 'graphs/graph_practice.csv',
         node1: 4,
@@ -23,7 +23,7 @@ export function generatePracticeTrials(task: TaskType): Trial[] {
       {
         trial_id: 'practice_A_2',
         task: 'A',
-        condition: 'B',
+        condition: 'D',
         axis_offset: 0,
         graph_file: 'graphs/graph_practice.csv',
         node1: 4,
@@ -39,7 +39,7 @@ export function generatePracticeTrials(task: TaskType): Trial[] {
       {
         trial_id: 'practice_B_1',
         task: 'B',
-        condition: 'A',
+        condition: 'B',
         axis_offset: 0,
         graph_file: 'graphs/graph_practice.csv',
         node1: 4,
@@ -49,7 +49,7 @@ export function generatePracticeTrials(task: TaskType): Trial[] {
       {
         trial_id: 'practice_B_2',
         task: 'B',
-        condition: 'B',
+        condition: 'D',
         axis_offset: 0,
         graph_file: 'graphs/graph_practice.csv',
         node1: 4,

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GraphData } from '../csv';
 import { Condition, AxisOffset, GraphViewerAPI } from '../types/experiment';
 
@@ -8,7 +9,7 @@ const TARGET_GRAPH_SIZE = 30; // Target size for normalized graphs (radius from 
 
 // Wiggle stereoscopy constants
 const DEFAULT_WIGGLE_FREQUENCY_MS = 100; // 10Hz (1000ms / 10 = 100ms)
-const SMALL_STEREO_SEPARATION = 3; // Condition C: small stereo separation
+const SMALL_STEREO_SEPARATION = 5; // Condition C: small stereo separation
 const LARGE_STEREO_SEPARATION = 8; // Condition D: large stereo separation
 
 export function createGraphViewer(container: HTMLElement, options?: { skipNormalization?: boolean; scaleFactor?: number }): GraphViewerAPI {
@@ -118,9 +119,16 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
       // Update base camera distance for wiggle stereoscopy
       baseCameraDistance = cameraDistance;
       
-      // Update camera position (will be adjusted by wiggle stereoscopy if active)
-      if (currentCondition === 'C' || currentCondition === 'D') {
+      // Update camera position (will be adjusted by wiggle stereoscopy if active, or OrbitControls for condition D)
+      if (currentCondition === 'C') {
         updateWiggleCamera();
+      } else if (currentCondition === 'D') {
+        // Condition D: OrbitControls will handle camera positioning
+        camera.position.set(0, 0, cameraDistance);
+        camera.lookAt(0, 0, 0);
+        if (orbitControls) {
+          orbitControls.update();
+        }
       } else {
         camera.position.set(0, 0, cameraDistance);
         camera.lookAt(0, 0, 0);
@@ -142,6 +150,9 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
   let isLeftEye = true; // Toggle between left and right eye views
   let baseCameraDistance = 50; // Base camera distance from origin
   let wiggleFrequencyMs = DEFAULT_WIGGLE_FREQUENCY_MS; // Wiggle frequency in milliseconds
+
+  // OrbitControls for condition D (free view)
+  let orbitControls: OrbitControls | null = null;
 
   // Raycaster for node click detection
   const raycaster = new THREE.Raycaster();
@@ -250,9 +261,9 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
   // Update camera position for wiggle stereoscopy
   function updateWiggleCamera() {
     if (!(camera instanceof THREE.PerspectiveCamera)) return;
-    if (currentCondition !== 'C' && currentCondition !== 'D') return;
+    if (currentCondition !== 'C') return; // Only condition C uses wiggle stereoscopy
     
-    const stereoSeparation = currentCondition === 'C' ? SMALL_STEREO_SEPARATION : LARGE_STEREO_SEPARATION;
+    const stereoSeparation = SMALL_STEREO_SEPARATION;
     const offsetX = isLeftEye ? -stereoSeparation / 2 : stereoSeparation / 2;
     
     // Position camera with stereo separation
@@ -267,7 +278,7 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
       clearInterval(wiggleInterval);
     }
 
-    if ((currentCondition === 'C' || currentCondition === 'D') && !isWigglePaused) {
+    if (currentCondition === 'C' && !isWigglePaused) {
       wiggleInterval = window.setInterval(() => {
         if (!isWigglePaused) {
           isLeftEye = !isLeftEye; // Toggle between left and right eye
@@ -301,7 +312,7 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
     console.log('resumeRotation called');
     isWigglePaused = false;
     // Restart wiggle if condition requires it
-    if (currentCondition === 'C' || currentCondition === 'D') {
+    if (currentCondition === 'C') {
       startWiggle();
     }
   }
@@ -494,9 +505,9 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
     adjustCameraToFitGraph();
     
     // Start or stop wiggle stereoscopy based on condition (only if not paused)
-    if (currentCondition === 'B' || currentCondition === 'A') {
+    if (currentCondition === 'B' || currentCondition === 'A' || currentCondition === 'D') {
       stopWiggle();
-    } else if ((currentCondition === 'C' || currentCondition === 'D') && !isWigglePaused) {
+    } else if (currentCondition === 'C' && !isWigglePaused) {
       startWiggle();
     }
   }
@@ -509,6 +520,12 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
 
     // Stop current wiggle stereoscopy
     stopWiggle();
+
+    // Clean up OrbitControls if condition is changing away from D
+    if (prevCondition === 'D' && condition !== 'D' && orbitControls) {
+      orbitControls.dispose();
+      orbitControls = null;
+    }
 
     // Remove old camera if it exists and condition changed
     if (prevCondition !== condition && camera) {
@@ -547,13 +564,28 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
       }
 
       scene.add(camera);
+
+      // Setup OrbitControls for condition D (free view)
+      if (condition === 'D' && camera instanceof THREE.PerspectiveCamera) {
+        if (orbitControls) {
+          orbitControls.dispose();
+        }
+        orbitControls = new OrbitControls(camera, renderer.domElement);
+        orbitControls.enableDamping = true;
+        orbitControls.dampingFactor = 0.05;
+        orbitControls.enableRotate = true;
+        orbitControls.enableZoom = true;
+        orbitControls.enablePan = true;
+        orbitControls.target.set(0, 0, 0);
+        orbitControls.update();
+      }
     }
 
     // Reload graph with new condition if graph is loaded
     if (originalGraphData) {
       reloadGraph();
     } else {
-      if ((condition === 'C' || condition === 'D') && !isWigglePaused) {
+      if (condition === 'C' && !isWigglePaused) {
         startWiggle();
       }
     }
@@ -675,8 +707,10 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
     adjustCameraToFitGraph();
     
     // Update wiggle camera if active
-    if (currentCondition === 'C' || currentCondition === 'D') {
+    if (currentCondition === 'C') {
       updateWiggleCamera();
+    } else if (currentCondition === 'D' && orbitControls) {
+      orbitControls.update();
     }
   }
 
@@ -685,6 +719,11 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
   // Animation loop
   function animate() {
     requestAnimationFrame(animate);
+    
+    // Update OrbitControls if active (condition D)
+    if (orbitControls && currentCondition === 'D') {
+      orbitControls.update();
+    }
     
     // 3Dの場合、ノードのサイズを距離に応じて調整して奥のノードも見やすくする
     if (!is2D && camera instanceof THREE.PerspectiveCamera) {
@@ -731,6 +770,10 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
     setWiggleFrequency,
     destroy: () => {
       stopWiggle();
+      if (orbitControls) {
+        orbitControls.dispose();
+        orbitControls = null;
+      }
       clearScene();
       window.removeEventListener('resize', handleResize);
       renderer.domElement.removeEventListener('click', handleMouseClick);

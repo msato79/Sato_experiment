@@ -162,7 +162,7 @@ export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
         ref={containerRef}
         className="w-full h-full"
       />
-      {(condition === 'C' || condition === 'D') && (
+      {condition === 'C' && (
         <button
           onClick={(e) => {
             e.preventDefault();

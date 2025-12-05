@@ -12,9 +12,9 @@ interface InstructionScreenProps {
 const CONDITIONS: Condition[] = ['A', 'B', 'C', 'D'];
 const CONDITION_LABELS: Record<Condition, string> = {
   A: '2D表示（平面表示）',
-  B: '3D表示（固定視点）',
-  C: '3D表示（軽い立体視）',
-  D: '3D表示（強い立体視）',
+  B: '3D表示（固定視点・立体視なし）',
+  C: '3D表示（固定視点・立体視あり）',
+  D: '3D表示（自由視点・立体視なし）',
 };
 
 // 説明用のサンプルグラフ
@@ -113,9 +113,27 @@ export function InstructionScreen({ task, onContinue }: InstructionScreenProps) 
                   </div>
                   {/* Label below the graph - same style as SurveyForm */}
                   <div className="bg-black bg-opacity-70 text-white p-4 mt-2 rounded-b-lg">
-                    <div className="text-center font-semibold">
+                    <div className="text-center font-semibold mb-2">
                       {CONDITION_LABELS[condition]}
                     </div>
+                    {condition === 'A' && (
+                      <div className="text-xs text-gray-200 mt-2 text-center">
+                        <div className="font-medium">2D平面表示です。視点は操作できません</div>
+                      </div>
+                    )}
+                    {condition === 'C' && (
+                      <div className="text-xs text-gray-200 mt-2 text-center">
+                        <div className="font-medium">立体視が自動で動きます。一時停止ボタンで制御できます</div>
+                      </div>
+                    )}
+                    {condition === 'D' && (
+                      <div className="text-xs text-gray-200 mt-2 space-y-1 text-left">
+                        <div className="font-medium mb-1">この表示方法では以下のような操作ができます：</div>
+                        <div>・マウス左ボタンドラッグ：グラフを回転</div>
+                        <div>・マウスホイール：拡大・縮小</div>
+                        <div>・マウス右ボタンドラッグ：平行移動</div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
