@@ -8,27 +8,44 @@ interface ParticipantIdInputProps {
 export function ParticipantIdInput({ onStart }: ParticipantIdInputProps) {
   const [participantId, setParticipantId] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
+  const [error, setError] = useState('');
 
-  // 全角数字を半角数字に変換し、数値以外の文字を除去する
-  const normalizeInput = (value: string): string => {
-    // 全角数字を半角数字に変換
-    const halfWidth = value.replace(/[０-９]/g, (char) => {
-      return String.fromCharCode(char.charCodeAt(0) - 0xFEE0);
-    });
-    // 数値以外の文字を除去
-    return halfWidth.replace(/[^0-9]/g, '');
+  // 半角数字かどうかをチェック
+  const isValidParticipantId = (value: string): boolean => {
+    // 空文字列はチェックしない（required属性で処理）
+    if (!value.trim()) {
+      return true;
+    }
+    // 半角数字のみかチェック
+    return /^[0-9]+$/.test(value.trim());
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const normalized = normalizeInput(e.target.value);
-    setParticipantId(normalized);
+    const value = e.target.value;
+    setParticipantId(value);
+    // 入力中にエラーをクリア
+    if (error) {
+      setError('');
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (participantId.trim()) {
-      setShowConfirm(true);
+    const trimmedId = participantId.trim();
+    
+    if (!trimmedId) {
+      setError(ja.participantIdRequired);
+      return;
     }
+    
+    if (!isValidParticipantId(trimmedId)) {
+      setError(ja.participantIdInvalidFormat);
+      return;
+    }
+    
+    // バリデーション成功
+    setError('');
+    setShowConfirm(true);
   };
 
   const handleConfirm = () => {
@@ -91,12 +108,17 @@ export function ParticipantIdInput({ onStart }: ParticipantIdInputProps) {
               id="participantId"
               value={participantId}
               onChange={handleChange}
-              inputMode="numeric"
-              pattern="[0-9]*"
               placeholder={ja.participantIdPlaceholder}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                error
+                  ? 'border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 focus:ring-blue-500'
+              }`}
               required
             />
+            {error && (
+              <p className="mt-2 text-sm text-red-600">{error}</p>
+            )}
           </div>
           <button
             type="submit"

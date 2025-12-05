@@ -11,6 +11,7 @@ export const ja = {
   participantIdLabel: '参加者ID',
   participantIdPlaceholder: '参加者IDを入力してください',
   participantIdRequired: '参加者IDを入力してください',
+  participantIdInvalidFormat: '参加者IDは半角数字で入力してください',
   participantIdConfirm: '入力した参加者IDを確認してください',
   participantIdConfirmMessage: '参加者ID:',
   participantIdConfirmButton: 'このIDで開始',
