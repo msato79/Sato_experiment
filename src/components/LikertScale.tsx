@@ -21,9 +21,9 @@ export function LikertScale({ label, value, onChange }: LikertScaleProps) {
               onClick={() => onChange(num)}
               className={`w-10 h-10 rounded-full border-2 ${
                 value === num
-                  ? 'bg-blue-600 border-blue-600 text-white'
-                  : 'border-gray-300 text-gray-700 hover:border-blue-400'
-              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                  ? 'bg-gray-600 border-gray-600 text-white'
+                  : 'border-gray-300 text-gray-700 hover:border-gray-400'
+              } focus:outline-none focus:ring-2 focus:ring-gray-500`}
             >
               {num}
             </button>

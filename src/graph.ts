@@ -239,7 +239,7 @@ export function initScene({ nodes, edges }: GraphData) {
     const blueAxisButton = document.getElementById('toggle-blue-axis') as HTMLButtonElement;
     if (blueAxisButton) {
       blueAxisButton.textContent = showBlueAxis ? '青軸を非表示' : '青軸を表示';
-      blueAxisButton.style.backgroundColor = showBlueAxis ? '#2196F3' : '#ccc';
+      blueAxisButton.style.backgroundColor = showBlueAxis ? '#4B5563' : '#9CA3AF';
     }
   }
 

@@ -168,7 +168,7 @@ export function ExperimentInfoScreen({ onContinue }: ExperimentInfoScreenProps) 
             <div className="flex justify-center">
               <button
                 onClick={handleRequestFullscreen}
-                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold"
+                className="bg-gray-600 text-white px-6 py-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 font-semibold"
               >
                 フルスクリーンにする
               </button>
@@ -180,7 +180,7 @@ export function ExperimentInfoScreen({ onContinue }: ExperimentInfoScreenProps) 
         <div className="mt-6 flex justify-center">
           <button
             onClick={onContinue}
-            className="px-8 py-3 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold text-lg"
+            className="px-8 py-3 rounded-md bg-gray-600 text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 font-semibold text-lg"
           >
             {ja.next}
           </button>

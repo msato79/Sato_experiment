@@ -27,13 +27,13 @@ export function TaskDisplay({
           <div className="flex space-x-1.5">
             <button
               onClick={() => onAnswerClick?.('2')}
-              className="bg-blue-600 text-white px-4 py-1.5 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm font-semibold pointer-events-auto"
+              className="bg-gray-600 text-white px-4 py-1.5 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm font-semibold pointer-events-auto"
             >
               {ja.distance2}
             </button>
             <button
               onClick={() => onAnswerClick?.('3')}
-              className="bg-orange-600 text-white px-4 py-1.5 rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 text-sm font-semibold pointer-events-auto"
+              className="bg-gray-600 text-white px-4 py-1.5 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm font-semibold pointer-events-auto"
             >
               {ja.distance3}
             </button>
@@ -43,7 +43,7 @@ export function TaskDisplay({
           <div>
             <button
               onClick={onProceedClick}
-              className="bg-purple-600 text-white px-4 py-1.5 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 text-sm font-semibold pointer-events-auto"
+              className="bg-gray-600 text-white px-4 py-1.5 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm font-semibold pointer-events-auto"
             >
               {ja.proceedNext}
             </button>

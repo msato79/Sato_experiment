@@ -132,7 +132,7 @@ export function DevTrialRunner({
           />
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
           >
             CSVファイルを選択
           </button>
@@ -154,7 +154,7 @@ export function DevTrialRunner({
         />
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 shadow-md"
+          className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 shadow-md"
         >
           📁 CSV読み込み
         </button>
