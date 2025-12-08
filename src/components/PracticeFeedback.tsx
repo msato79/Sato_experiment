@@ -69,14 +69,16 @@ export function PracticeFeedback({
                 <div className={`font-bold text-base ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
                   {isCorrect ? ja.correct : ja.incorrect}
                 </div>
-                {!isCorrect && trial.task === 'A' && (
+                {trial.task === 'A' && (
                   <div className="mt-2 text-sm text-gray-700">
                     <div>{ja.correctAnswer}: {correctAnswer}</div>
+                    <div>{ja.yourAnswer}: {userAnswer}</div>
                   </div>
                 )}
-                {!isCorrect && trial.task === 'B' && (
+                {trial.task === 'B' && (
                   <div className="mt-2 text-sm text-gray-700">
                     <div>{ja.correctAnswer}: <span className="text-blue-600 font-semibold">{correctAnswer}</span></div>
+                    <div>{ja.yourAnswer}: <span className="text-yellow-600 font-semibold">{userAnswer}</span></div>
                   </div>
                 )}
               </div>
