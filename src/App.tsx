@@ -26,7 +26,6 @@ import {
   getPracticePhase,
   shouldShowSurveyAfterTrial,
   shouldShowSurveyAfterBlock,
-  shouldShowSurveyAfterBothTasks,
 } from './utils/phaseHelpers';
 
 export function App() {
