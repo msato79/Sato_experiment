@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Trial, TrialResult, Condition } from '../types/experiment';
 import { GraphData } from '../csv';
 import { GraphDisplay, GraphDisplayRef } from './GraphDisplay';
@@ -6,6 +6,7 @@ import { TaskDisplay } from './TaskDisplay';
 import { PracticeFeedback } from './PracticeFeedback';
 import { useTaskAHandler } from './TaskHandlers/TaskAHandler';
 import { useTaskBHandler } from './TaskHandlers/TaskBHandler';
+import { findCommonNeighbors } from '../lib/path-finder';
 import { ja } from '../locales/ja';
 
 const CONDITION_LABELS: Record<Condition, string> = {
@@ -38,11 +39,15 @@ export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = fa
   const [userAnswer, setUserAnswer] = useState<string>('');
   const [isCorrect, setIsCorrect] = useState<boolean>(false);
   const [clickCount, setClickCount] = useState<number>(0);
+  const [correctAnswerNodes, setCorrectAnswerNodes] = useState<number[]>([]);
 
-  const handlePracticeFeedback = (correct: string, user: string, correctFlag: boolean) => {
+  const handlePracticeFeedback = (correct: string, user: string, correctFlag: boolean, correctNodes?: number[]) => {
     setCorrectAnswer(correct);
     setUserAnswer(user);
     setIsCorrect(correctFlag);
+    if (correctNodes) {
+      setCorrectAnswerNodes(correctNodes);
+    }
   };
 
   const handlePracticeContinue = () => {
@@ -90,6 +95,18 @@ export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = fa
   const isComplete = trial.task === 'A' ? taskAHandler.isComplete : taskBHandler.isComplete;
   const selectedNodes = trial.task === 'B' ? taskBHandler.selectedNodes : undefined;
   const currentClickCount = trial.task === 'A' ? taskAHandler.clickCount : taskBHandler.clickCount;
+  
+  // Calculate correct answer nodes for Task B practice (use state if available, otherwise calculate)
+  const displayCorrectAnswerNodes = useMemo(() => {
+    if (trial.task === 'B' && isPractice && isComplete) {
+      // Use state if available (set by handlePracticeFeedback), otherwise calculate
+      if (correctAnswerNodes.length > 0) {
+        return correctAnswerNodes;
+      }
+      return findCommonNeighbors(graphData, trial.node1, trial.node2);
+    }
+    return [];
+  }, [trial.task, trial.node1, trial.node2, graphData, isPractice, isComplete, correctAnswerNodes]);
   
   // Track click count for practice mode
   React.useEffect(() => {
@@ -209,6 +226,7 @@ export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = fa
             axisOffset={trial.axis_offset}
             onNodeClick={trial.task === 'A' ? handleNodeClickForTaskA : taskBHandler.handleNodeClick}
             highlightedNodes={[trial.node1, trial.node2]}
+            correctAnswerNodes={trial.task === 'B' && isPractice && isComplete ? displayCorrectAnswerNodes : []}
             startNode={trial.node1}
             targetNode={trial.node2}
             scaleFactor={isPractice ? 0.85 : 1.0}

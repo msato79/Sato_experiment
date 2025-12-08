@@ -30,7 +30,7 @@ export function ReadyForMainScreen({ task, onContinue }: ReadyForMainScreenProps
 
           <button
             onClick={onContinue}
-            className="bg-gray-600 text-white px-8 py-3 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 font-semibold text-lg transition-colors"
+            className="bg-blue-600 text-white px-8 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold text-lg transition-colors"
           >
             本番へ進む
           </button>

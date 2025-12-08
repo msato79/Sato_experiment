@@ -9,6 +9,7 @@ interface GraphDisplayProps {
   axisOffset: AxisOffset;
   onNodeClick: (nodeId: number) => void;
   highlightedNodes?: number[];
+  correctAnswerNodes?: number[]; // For Task B practice: correct answer nodes (blue)
   startNode?: number;
   targetNode?: number;
   skipNormalization?: boolean;
@@ -26,6 +27,7 @@ export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
   axisOffset,
   onNodeClick,
   highlightedNodes = [],
+  correctAnswerNodes = [],
   startNode,
   targetNode,
   skipNormalization = false,
@@ -137,6 +139,33 @@ export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
     prevHighlightedNodesRef.current = [...highlightedNodes];
   }, [highlightedNodes]);
 
+  // Update correct answer nodes
+  const prevCorrectAnswerNodesRef = useRef<number[]>([]);
+  useEffect(() => {
+    if (!viewerRef.current) return;
+
+    // Create sets for comparison
+    const prevSet = new Set(prevCorrectAnswerNodesRef.current);
+    const currentSet = new Set(correctAnswerNodes);
+
+    // Clear correct answer nodes that are no longer in the list
+    prevCorrectAnswerNodesRef.current.forEach(nodeId => {
+      if (!currentSet.has(nodeId)) {
+        viewerRef.current?.setCorrectAnswerNodes([]);
+      }
+    });
+
+    // Apply new correct answer nodes
+    if (correctAnswerNodes.length > 0) {
+      viewerRef.current.setCorrectAnswerNodes(correctAnswerNodes);
+    } else {
+      viewerRef.current.setCorrectAnswerNodes([]);
+    }
+
+    // Update previous correct answer nodes
+    prevCorrectAnswerNodesRef.current = [...correctAnswerNodes];
+  }, [correctAnswerNodes]);
+
   // Update wiggle frequency when it changes
   useEffect(() => {
     if (viewerRef.current && wiggleFrequencyMs !== undefined && viewerRef.current.setWiggleFrequency) {
@@ -180,8 +209,8 @@ export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
         </button>
       )}
       {condition === 'D' && (
-        <div className="absolute top-4 right-4 z-50 bg-gray-600 text-white px-4 py-2 rounded-md shadow-md pointer-events-none">
-          視点操作可能
+        <div className="absolute top-4 right-4 z-50 text-2xl text-gray-700 pointer-events-none">
+          ※視点操作可能
         </div>
       )}
     </div>

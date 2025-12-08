@@ -140,7 +140,7 @@ export function SurveyForm({ task, graphFile, node1, node2, onSubmit }: SurveyFo
               <button
                 type="submit"
                 disabled={preferredCondition === null}
-                className="bg-gray-600 text-white py-3 px-8 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed text-lg font-semibold"
+                className="bg-blue-600 text-white py-3 px-8 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed text-lg font-semibold"
               >
                 {ja.submit}
               </button>

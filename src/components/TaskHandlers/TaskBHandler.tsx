@@ -11,7 +11,7 @@ interface TaskBHandlerProps {
   isPractice: boolean;
   graphDisplayRef: React.RefObject<GraphDisplayRef>;
   onComplete: (result: TrialResult) => void;
-  onPracticeFeedback?: (correctAnswer: string, userAnswer: string, isCorrect: boolean) => void;
+  onPracticeFeedback?: (correctAnswer: string, userAnswer: string, isCorrect: boolean, correctNodes?: number[]) => void;
 }
 
 export function useTaskBHandler({
@@ -69,10 +69,10 @@ export function useTaskBHandler({
     
     // Store answers for practice feedback
     if (isPractice && onPracticeFeedback) {
-      // For Task B practice, show only the count
-      const correctAnswer = `${correctArray.length}個`;
-      const userAnswer = `${selectedArray.length}個`;
-      onPracticeFeedback(correctAnswer, userAnswer, correct);
+      // For Task B practice, pass correct nodes array for highlighting
+      const correctAnswer = '青色にハイライトされたノード';
+      const userAnswer = '黄色のノード';
+      onPracticeFeedback(correctAnswer, userAnswer, correct, correctArray);
       return;
     }
     

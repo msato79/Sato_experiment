@@ -142,6 +142,7 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
   let graphCentroid = new THREE.Vector3(0, 0, 0);
   let highlightedNodes = new Set<number>();
   let selectedNodes = new Set<number>(); // For Task B: selected nodes (yellow/orange)
+  let correctAnswerNodes = new Set<number>(); // For Task B practice: correct answer nodes (blue)
   let startNodeId: number | null = null;
   let targetNodeId: number | null = null;
   let hoveredNodeId: number | null = null;
@@ -204,6 +205,8 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
           (prevMesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
         } else if (prevMesh.userData.nodeId === targetNodeId) {
           (prevMesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
+        } else if (correctAnswerNodes.has(hoveredNodeId)) {
+          (prevMesh.material as THREE.MeshBasicMaterial).color.setHex(0x0000ff); // Blue
         } else if (highlightedNodes.has(hoveredNodeId)) {
           (prevMesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
         } else if (selectedNodes.has(hoveredNodeId)) {
@@ -238,6 +241,8 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
           (prevMesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
         } else if (hoveredNodeId === targetNodeId) {
           (prevMesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
+        } else if (correctAnswerNodes.has(hoveredNodeId)) {
+          (prevMesh.material as THREE.MeshBasicMaterial).color.setHex(0x0000ff); // Blue
         } else if (highlightedNodes.has(hoveredNodeId)) {
           (prevMesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
         } else if (selectedNodes.has(hoveredNodeId)) {
@@ -372,6 +377,7 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
     edgeLines.length = 0;
     highlightedNodes.clear();
     selectedNodes.clear();
+    correctAnswerNodes.clear();
   }
 
   // Load graph data
@@ -483,6 +489,8 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
         (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
       } else if (node.id === targetNodeId) {
         (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
+      } else if (correctAnswerNodes.has(node.id)) {
+        (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x0000ff); // Blue
       } else if (highlightedNodes.has(node.id)) {
         (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
       } else if (selectedNodes.has(node.id)) {
@@ -645,18 +653,20 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
 
     if (highlight) {
       highlightedNodes.add(nodeId);
-      // Don't override start/target node colors or selected nodes
-      if (nodeId !== startNodeId && nodeId !== targetNodeId && !selectedNodes.has(nodeId)) {
+      // Don't override start/target node colors, selected nodes, or correct answer nodes
+      if (nodeId !== startNodeId && nodeId !== targetNodeId && !selectedNodes.has(nodeId) && !correctAnswerNodes.has(nodeId)) {
         (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
       }
     } else {
       highlightedNodes.delete(nodeId);
-      // Only reset to black if not hovered, start, target, or selected
+      // Only reset to black if not hovered, start, target, selected, or correct answer
       if (!hoveredNodeId || hoveredNodeId !== nodeId) {
         if (nodeId === startNodeId) {
           (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
         } else if (nodeId === targetNodeId) {
           (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x00ff00); // Green
+        } else if (correctAnswerNodes.has(nodeId)) {
+          (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x0000ff); // Blue
         } else if (selectedNodes.has(nodeId)) {
           (mesh.material as THREE.MeshBasicMaterial).color.setHex(0xffaa00); // Orange/Yellow
         } else {
@@ -673,7 +683,12 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
       const mesh = nodeMeshes.get(nodeId);
       if (mesh && nodeId !== startNodeId && nodeId !== targetNodeId) {
         if (!hoveredNodeId || hoveredNodeId !== nodeId) {
-          (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x000000); // Black
+          // Restore color based on correct answer nodes
+          if (correctAnswerNodes.has(nodeId)) {
+            (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x0000ff); // Blue
+          } else {
+            (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x000000); // Black
+          }
         }
       }
     });
@@ -686,6 +701,34 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
       const mesh = nodeMeshes.get(nodeId);
       if (mesh && nodeId !== startNodeId && nodeId !== targetNodeId) {
         (mesh.material as THREE.MeshBasicMaterial).color.setHex(0xffaa00); // Orange/Yellow
+      }
+    });
+  }
+
+  // Set correct answer nodes (for Task B practice: highlight correct answer nodes in blue)
+  function setCorrectAnswerNodes(nodeIds: number[]) {
+    // Clear previous correct answer nodes
+    correctAnswerNodes.forEach(nodeId => {
+      const mesh = nodeMeshes.get(nodeId);
+      if (mesh && nodeId !== startNodeId && nodeId !== targetNodeId) {
+        if (!hoveredNodeId || hoveredNodeId !== nodeId) {
+          if (selectedNodes.has(nodeId)) {
+            (mesh.material as THREE.MeshBasicMaterial).color.setHex(0xffaa00); // Orange/Yellow
+          } else {
+            (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x000000); // Black
+          }
+        }
+      }
+    });
+    
+    correctAnswerNodes.clear();
+    
+    // Set new correct answer nodes color (blue)
+    nodeIds.forEach(nodeId => {
+      correctAnswerNodes.add(nodeId);
+      const mesh = nodeMeshes.get(nodeId);
+      if (mesh && nodeId !== startNodeId && nodeId !== targetNodeId && !selectedNodes.has(nodeId)) {
+        (mesh.material as THREE.MeshBasicMaterial).color.setHex(0x0000ff); // Blue
       }
     });
   }
@@ -764,6 +807,7 @@ export function createGraphViewer(container: HTMLElement, options?: { skipNormal
     setStartNode,
     setTargetNode,
     setSelectedNodes,
+    setCorrectAnswerNodes,
     onNodeClick: setOnNodeClick,
     pauseRotation,
     resumeRotation,

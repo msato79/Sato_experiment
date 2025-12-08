@@ -67,6 +67,7 @@ export interface GraphViewerAPI {
   setStartNode: (nodeId: number | null) => void;
   setTargetNode: (nodeId: number | null) => void;
   setSelectedNodes: (nodeIds: number[]) => void; // For Task B: highlight selected nodes (yellow/orange)
+  setCorrectAnswerNodes: (nodeIds: number[]) => void; // For Task B practice: highlight correct answer nodes (blue)
   onNodeClick: (callback: (nodeId: number) => void) => void;
   pauseRotation: () => void;
   resumeRotation: () => void;
