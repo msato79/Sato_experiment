@@ -48,10 +48,10 @@ export function DevApp() {
                 onChange={(e) => setCondition(e.target.value as Condition)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="A">2D表示</option>
-                <option value="B">3D固定視点（立体視なし）</option>
-                <option value="C">3D固定視点（立体視あり）</option>
-                <option value="D">3D自由視点（立体視なし）</option>
+                <option value="A">条件A</option>
+                <option value="B">条件B</option>
+                <option value="C">条件C</option>
+                <option value="D">条件D</option>
               </select>
             </div>
 

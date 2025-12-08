@@ -176,8 +176,13 @@ export const GraphDisplay = forwardRef<GraphDisplayRef, GraphDisplayProps>(({
           className="absolute top-4 right-4 z-50 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-md pointer-events-auto"
           style={{ pointerEvents: 'auto' }}
         >
-          {isRotationPaused ? '立体視を再開' : '立体視を一時停止'}
+          {isRotationPaused ? '揺れを再開' : '揺れを一時停止'}
         </button>
+      )}
+      {condition === 'D' && (
+        <div className="absolute top-4 right-4 z-50 bg-green-600 text-white px-4 py-2 rounded-md shadow-md pointer-events-none">
+          視点操作可能
+        </div>
       )}
     </div>
   );

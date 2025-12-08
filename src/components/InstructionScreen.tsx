@@ -11,10 +11,10 @@ interface InstructionScreenProps {
 
 const CONDITIONS: Condition[] = ['A', 'B', 'C', 'D'];
 const CONDITION_LABELS: Record<Condition, string> = {
-  A: '2D表示（平面表示）',
-  B: '3D表示（固定視点・立体視なし）',
-  C: '3D表示（固定視点・立体視あり）',
-  D: '3D表示（自由視点・立体視なし）',
+  A: '条件A',
+  B: '条件B',
+  C: '条件C',
+  D: '条件D',
 };
 
 // 説明用のサンプルグラフ
@@ -116,14 +116,9 @@ export function InstructionScreen({ task, onContinue }: InstructionScreenProps) 
                     <div className="text-center font-semibold mb-2">
                       {CONDITION_LABELS[condition]}
                     </div>
-                    {condition === 'A' && (
-                      <div className="text-xs text-gray-200 mt-2 text-center">
-                        <div className="font-medium">2D平面表示です。視点は操作できません</div>
-                      </div>
-                    )}
                     {condition === 'C' && (
                       <div className="text-xs text-gray-200 mt-2 text-center">
-                        <div className="font-medium">立体視が自動で動きます。一時停止ボタンで制御できます</div>
+                        <div className="font-medium">自動で動きます。一時停止ボタンで制御できます</div>
                       </div>
                     )}
                     {condition === 'D' && (

@@ -9,10 +9,10 @@ import { useTaskBHandler } from './TaskHandlers/TaskBHandler';
 import { ja } from '../locales/ja';
 
 const CONDITION_LABELS: Record<Condition, string> = {
-  A: '2D表示（平面表示）',
-  B: '3D表示（固定視点・立体視なし）',
-  C: '3D表示（固定視点・立体視あり）',
-  D: '3D表示（自由視点・立体視なし）',
+  A: '条件A',
+  B: '条件B',
+  C: '条件C',
+  D: '条件D',
 };
 
 interface TrialRunnerProps {
@@ -187,7 +187,7 @@ export function TrialRunner({ trial, graphData, onTrialComplete, isPractice = fa
           )}
           {trial.condition === 'C' && (
             <div className="text-white text-lg text-center px-8">
-              立体視が自動で動きます。一時停止ボタンで制御できます
+              自動で動きます。一時停止ボタンで制御できます
             </div>
           )}
           {trial.condition === 'D' && (
