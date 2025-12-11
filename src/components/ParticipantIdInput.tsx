@@ -103,6 +103,9 @@ export function ParticipantIdInput({ onStart }: ParticipantIdInputProps) {
             <label htmlFor="participantId" className="block text-sm font-medium text-gray-700 mb-2">
               {ja.participantIdLabel}
             </label>
+            <p className="text-sm text-gray-600 mb-2">
+              必ず実験分担者から直接伝えられた参加者idを入力してください
+            </p>
             <input
               type="text"
               id="participantId"
